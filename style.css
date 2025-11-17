@@ -28,7 +28,7 @@
     color: var(--text);
   }
   
-  /* App 外框：上 header 下 layout */
+  /* App 外框：header + main */
   .app {
     height: 100%;
     display: flex;
@@ -64,42 +64,41 @@
     font-size: 22px;
   }
   
-  /* Main layout: 左欄 + 右欄 */
+  /* Main layout: 左 + 右 */
   .layout {
     flex: 1 1 auto;
     display: grid;
-    grid-template-columns: 360px 1fr; /* 左固定、右自適應 */
+    grid-template-columns: 380px 1fr;   /* 左固定寬度，右自適應 */
     height: 100%;
-    overflow: hidden;                 /* 主區塊不滾動 */
+    overflow: hidden;
   }
   
-  /* 左欄：上下 split pane */
+  /* 左側：3 區塊（上成員 / 中行程表單 / 下記帳） */
   .left-column {
     display: grid;
-    grid-template-rows: 50% 6px 1fr;  /* 上 50% / Splitter / 下 50% */
+    grid-template-rows: auto auto 1fr;  /* 上中高度自適應，下填滿 */
     border-right: 1px solid var(--border);
-    overflow: hidden;                 /* 左欄不外溢 */
+    overflow: hidden;
   }
   
-  /* 左上、左下 panel 各自滾動 */
   .panel-members,
-  .panel-expenses {
-    padding: 10px;
-    overflow-y: auto;                 /* ⭐ 自己滾動 */
+  .panel-schedule-form {
+    padding: 8px 10px;
+    overflow: hidden;                   /* 不需要獨立捲動 */
   }
   
-  /* 右欄 panel 也自己滾動 */
+  .panel-expenses {
+    padding: 8px 10px;
+    overflow-y: auto;                   /* 記帳區塊可滾動 */
+  }
+  
+  /* 右側行程列表：自己滾動 */
   .panel-schedule {
     padding: 10px 16px;
-    overflow-y: auto;                 /* ⭐ 自己滾動 */
+    overflow-y: auto;
   }
   
-  /* Splitter */
-  .splitter {
-    height: 6px;
-    background: var(--border);
-    cursor: row-resize;
-  }
+  /* Splitter v5 不使用 */
   
   /* Panel / Card */
   .panel-title {
@@ -131,6 +130,11 @@
   
   .form-grid.small {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  /* 成員表單更緊湊 */
+  .member-form-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   
   .form-field {
@@ -194,7 +198,38 @@
     color: var(--danger);
   }
   
-  /* Chip group (成員複選) */
+  /* 成員圓點列（左上只一排） */
+  .member-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  
+  .member-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.15);
+    white-space: nowrap;
+  }
+  
+  .member-pill span {
+    font-weight: 600;
+  }
+  
+  .member-pill small {
+    opacity: 0.9;
+  }
+  
+  /* tooltip 簡化用 title attribute，CSS 不需特別處理 */
+  
+  /* 通用 chip 群組（選成員用） */
   .chip-group {
     display: flex;
     flex-wrap: wrap;
@@ -232,35 +267,6 @@
     width: 16px;
     height: 16px;
     font-size: 10px;
-  }
-  
-  /* 成員列表 */
-  .member-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  
-  .member-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 8px;
-    border-radius: 8px;
-    background: #f9fafb;
-    border: 1px solid var(--border);
-  }
-  
-  .member-info {
-    margin-left: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  
-  .member-meta {
-    font-size: 11px;
-    color: var(--text-subtle);
   }
   
   /* 記帳列表 */
@@ -319,7 +325,7 @@
     color: #dc2626;
   }
   
-  /* 行程列表 */
+  /* 行程列表：右側 */
   .schedule-list {
     display: flex;
     flex-direction: column;
@@ -373,7 +379,7 @@
     color: var(--text-subtle);
   }
   
-  /* 手機：小螢幕時，允許整頁滾動、改為上下排 */
+  /* 手機：改為單欄上下排，允許整頁滾動 */
   @media (max-width: 820px) {
     html, body {
       overflow: auto;
@@ -385,19 +391,16 @@
     }
   
     .left-column {
-      grid-template-rows: auto;
+      grid-template-rows: auto auto auto;
     }
   
     .panel-members,
+    .panel-schedule-form,
     .panel-expenses,
     .panel-schedule {
       height: auto;
       max-height: none;
       overflow: visible;
-    }
-  
-    .splitter {
-      display: none;
     }
   }
   

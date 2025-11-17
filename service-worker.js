@@ -1,4 +1,4 @@
-const CACHE_NAME = "trip-planner-new-cache-v1";
+const CACHE_NAME = "trip-planner-v5-cache";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",

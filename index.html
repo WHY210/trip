@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trip Planner · Split Layout</title>
+  <title>Trip Planner · v5 Layout</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
@@ -26,17 +26,17 @@
       </div>
     </header>
 
-    <!-- MAIN：左欄(上下) + 右欄 -->
+    <!-- MAIN：左側 3 區 + 右側行程列表 -->
     <main class="layout">
-      <!-- 左欄：成員 + Splitter + 記帳 -->
-      <div class="left-column" id="left-column">
-        <!-- 左上：成員管理 -->
+      <!-- 左側 -->
+      <section class="left-column" id="left-column">
+        <!-- 左上：成員（只一排圓點） -->
         <section class="panel panel-members" id="members-panel">
-          <h2 class="panel-title">成員管理</h2>
+          <h2 class="panel-title">成員</h2>
 
           <div class="card">
             <h3 class="card-title">新增成員</h3>
-            <form id="member-form" class="form-grid">
+            <form id="member-form" class="form-grid member-form-grid">
               <div class="form-field">
                 <label for="member-name">姓名</label>
                 <input id="member-name" type="text" required />
@@ -51,7 +51,7 @@
                   <option value="">自動指派</option>
                 </select>
               </div>
-              <div class="form-field form-field-full">
+              <div class="form-field">
                 <label for="member-note">備註</label>
                 <input id="member-note" type="text" />
               </div>
@@ -59,16 +59,44 @@
                 <button type="submit" class="btn primary">新增成員</button>
               </div>
             </form>
-          </div>
 
-          <div class="card">
-            <h3 class="card-title">成員列表</h3>
-            <div id="member-list" class="member-list empty-hint"></div>
+            <!-- 成員圓點：只一排 -->
+            <div id="member-chip-row" class="member-chip-row empty-hint"></div>
           </div>
         </section>
 
-        <!-- 中間 Splitter -->
-        <div class="splitter" id="splitter"></div>
+        <!-- 左中：新增行程 -->
+        <section class="panel panel-schedule-form" id="schedule-form-panel">
+          <h2 class="panel-title">新增行程</h2>
+
+          <div class="card">
+            <form id="schedule-form" class="form-grid">
+              <div class="form-field">
+                <label for="schedule-date">日期</label>
+                <input id="schedule-date" type="date" required />
+              </div>
+              <div class="form-field">
+                <label for="schedule-time">時間</label>
+                <input id="schedule-time" type="time" />
+              </div>
+              <div class="form-field">
+                <label for="schedule-title">名稱</label>
+                <input id="schedule-title" type="text" required />
+              </div>
+              <div class="form-field">
+                <label for="schedule-location">地點 / 備註</label>
+                <input id="schedule-location" type="text" />
+              </div>
+              <div class="form-field form-field-full">
+                <label>參與成員</label>
+                <div id="schedule-members" class="chip-group"></div>
+              </div>
+              <div class="form-actions form-field-full">
+                <button type="submit" class="btn primary">加入行程</button>
+              </div>
+            </form>
+          </div>
+        </section>
 
         <!-- 左下：記帳 + 結算 -->
         <section class="panel panel-expenses" id="expenses-panel">
@@ -142,55 +170,25 @@
             <div id="expense-list" class="expense-list empty-hint"></div>
           </div>
 
-          <!-- 結餘 -->
+          <!-- 個人結餘 -->
           <div class="card">
             <h3 class="card-title">個人結餘</h3>
             <ul id="balance-summary" class="balance-list empty-hint"></ul>
           </div>
 
-          <!-- Pairwise -->
+          <!-- 兩兩結算 -->
           <div class="card">
             <h3 class="card-title">兩兩結算</h3>
             <ul id="pairwise-list" class="pairwise-list empty-hint"></ul>
           </div>
         </section>
-      </div>
+      </section>
 
-      <!-- 右欄：行程 -->
+      <!-- 右側：已加入行程列表 -->
       <section class="panel panel-schedule" id="schedule-panel">
-        <h2 class="panel-title">行程（右側整欄）</h2>
+        <h2 class="panel-title">行程列表（已加入）</h2>
 
         <div class="card">
-          <h3 class="card-title">新增行程</h3>
-          <form id="schedule-form" class="form-grid">
-            <div class="form-field">
-              <label for="schedule-date">日期</label>
-              <input id="schedule-date" type="date" required />
-            </div>
-            <div class="form-field">
-              <label for="schedule-time">時間</label>
-              <input id="schedule-time" type="time" />
-            </div>
-            <div class="form-field">
-              <label for="schedule-title">名稱</label>
-              <input id="schedule-title" type="text" required />
-            </div>
-            <div class="form-field">
-              <label for="schedule-location">地點 / 備註</label>
-              <input id="schedule-location" type="text" />
-            </div>
-            <div class="form-field form-field-full">
-              <label>參與成員</label>
-              <div id="schedule-members" class="chip-group"></div>
-            </div>
-            <div class="form-actions form-field-full">
-              <button type="submit" class="btn primary">新增行程</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">行程列表</h3>
           <div id="schedule-list" class="schedule-list empty-hint"></div>
         </div>
       </section>

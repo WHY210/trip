@@ -227,6 +227,134 @@ clearBtn.addEventListener("click", () => {
     renderMembers();
   }
 });
+// ===============================
+// 記帳資料結構
+// ===============================
+if (!data.expenses) data.expenses = [];
 
-// 初始化
-loadFromStorage();
+// 重新渲染付款人下拉選單 + 分帳成員 checkbox
+function renderExpenseMembers() {
+  const payerSelect = document.getElementById("exp-payer");
+  const membersBox = document.getElementById("exp-members");
+
+  payerSelect.innerHTML = "";
+  membersBox.innerHTML = "";
+
+  data.members.forEach((m, idx) => {
+    // payer
+    const option = document.createElement("option");
+    option.value = idx;
+    option.textContent = m.name;
+    payerSelect.appendChild(option);
+
+    // checkbox list
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = idx;
+
+    label.appendChild(cb);
+    label.append(" " + m.name);
+    membersBox.appendChild(label);
+  });
+}
+
+// ===============================
+// 新增記帳
+// ===============================
+document.getElementById("expense-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("exp-name").value.trim();
+  const amount = Number(document.getElementById("exp-amount").value);
+  const payerIndex = Number(document.getElementById("exp-payer").value);
+  
+  const selectedMembers = Array.from(
+    document.querySelectorAll("#exp-members input:checked")
+  ).map(cb => Number(cb.value));
+
+  if (selectedMembers.length === 0) {
+    alert("請至少選擇一位需要分帳的成員");
+    return;
+  }
+
+  const expense = {
+    name,
+    amount,
+    payer: payerIndex,
+    members: selectedMembers
+  };
+
+  data.expenses.push(expense);
+  saveToStorage();
+  renderExpenses();
+  renderSettlement();
+
+  e.target.reset();
+  renderExpenseMembers();
+});
+
+// ===============================
+// 顯示記帳紀錄
+// ===============================
+function renderExpenses() {
+  const tbody = document.querySelector("#expense-table tbody");
+  tbody.innerHTML = "";
+
+  data.expenses.forEach((exp) => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${exp.name}</td>
+      <td>${exp.amount}</td>
+      <td>${data.members[exp.payer].name}</td>
+      <td>${exp.members.map(i => data.members[i].name).join(", ")}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ===============================
+// 結算（誰欠誰）
+// ===============================
+function renderSettlement() {
+  const result = {}; // money[payer] + / - 
+  
+  // 初始化所有人
+  data.members.forEach((m, i) => {
+    result[i] = 0;
+  });
+
+  // 計算每筆消費
+  data.expenses.forEach(exp => {
+    const share = exp.amount / exp.members.length;
+
+    exp.members.forEach(i => {
+      if (i === exp.payer) return;  
+      result[i] -= share;
+      result[exp.payer] += share;
+    });
+  });
+
+  // 顯示
+  const list = document.getElementById("settlement-list");
+  list.innerHTML = "";
+
+  data.members.forEach((m, i) => {
+    if (Math.abs(result[i]) > 1) {
+      const li = document.createElement("li");
+      li.textContent = `${m.name}：${result[i] > 0 ? "應收" : "應付"} ${Math.abs(result[i]).toFixed(0)} 元`;
+      list.appendChild(li);
+    }
+  });
+}
+
+// ===============================
+// 初始化：順序很重要！！！
+// ===============================
+loadFromStorage();        // 1. 先載入所有舊資料（members, expenses）
+
+renderExpenseMembers();   // 2. 再渲染付款人選單 & checkbox
+renderExpenses();         // 3. 渲染記帳紀錄
+renderSettlement();       // 4. 渲染自動結算

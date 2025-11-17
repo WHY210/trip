@@ -9,13 +9,14 @@
   <link rel="manifest" href="manifest.json" />
 
   <!-- iOS 加到主畫面圖示 & 標題 -->
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="家族旅遊" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <header class="topbar">
     <h1>家族旅遊登記暨行程通知</h1>
@@ -24,59 +25,50 @@
 
   <main class="container">
 
-    <!-- 行程設定區 -->
+    <!-- 行程設定 -->
     <section class="card">
       <h2>行程資訊設定（管理人用）</h2>
       <form id="trip-form" class="form-grid">
-        <label>
-          旅遊名稱
+        <label>旅遊名稱
           <input type="text" id="trip-title" placeholder="例如：2025 花東三天兩夜" required>
         </label>
-        <label>
-          日期
+        <label>日期
           <input type="text" id="trip-date" placeholder="例如：2025/04/03–04/05">
         </label>
-        <label>
-          集合地點
+        <label>集合地點
           <input type="text" id="trip-location" placeholder="例如：台北車站東三門">
         </label>
-        <label class="full">
-          行程簡介／重要提醒
+        <label class="full">行程簡介／重要提醒
           <textarea id="trip-note" rows="3" placeholder="例如：請自備個人藥品、防曬、泳衣…"></textarea>
         </label>
         <button type="submit" class="btn primary">儲存行程資訊</button>
       </form>
 
-      <div class="info-box" id="trip-display">
-        <!-- 這裡由 JS 動態顯示行程概要，方便分享給家人看 -->
-      </div>
+      <div class="info-box" id="trip-display"></div>
     </section>
 
-    <!-- 報名表單 -->
+    <!-- 報名 -->
     <section class="card">
       <h2>家族成員報名</h2>
       <p class="hint">👉 把這個網站網址丟到家族群組，每個人可以自己填寫報名資料。</p>
+
       <form id="member-form" class="form-grid">
-        <label>
-          姓名
-          <input type="text" id="member-name" placeholder="你的名字" required>
+        <label>姓名
+          <input type="text" id="member-name" required>
         </label>
-        <label>
-          人數
+        <label>人數
           <input type="number" id="member-count" min="1" value="1">
         </label>
-        <label>
-          連絡電話
-          <input type="tel" id="member-phone" placeholder="手機或市話">
+        <label>連絡電話
+          <input type="tel" id="member-phone">
         </label>
-        <label>
-          飲食／住宿需求
-          <input type="text" id="member-diet" placeholder="吃素、不吃牛、需要嬰兒床等">
+        <label>飲食／住宿需求
+          <input type="text" id="member-diet">
         </label>
-        <label class="full">
-          備註
-          <textarea id="member-note" rows="2" placeholder="其他想跟主揪說的"></textarea>
+        <label class="full">備註
+          <textarea id="member-note" rows="2"></textarea>
         </label>
+
         <button type="submit" class="btn primary">送出報名</button>
       </form>
     </section>
@@ -84,14 +76,16 @@
     <!-- 報名清單 -->
     <section class="card">
       <h2>目前報名清單</h2>
+
       <div class="list-header">
         <span id="total-members">總人數：0 人</span>
         <div class="list-actions">
-          <button class="btn small" id="export-json">匯出 JSON（給 GitHub 備份）</button>
-          <label class="btn small secondary">
-            匯入 JSON
+          <button class="btn small" id="export-json">匯出 JSON</button>
+
+          <label class="btn small secondary">匯入 JSON
             <input type="file" id="import-json" accept="application/json" hidden>
           </label>
+
           <button class="btn small danger" id="clear-data">清空本機資料</button>
         </div>
       </div>
@@ -99,51 +93,70 @@
       <table class="table" id="member-table">
         <thead>
           <tr>
-            <th>#</th>
-            <th>姓名</th>
-            <th>人數</th>
-            <th>電話</th>
-            <th>需求</th>
-            <th>備註</th>
-            <th>操作</th>
+            <th>#</th><th>姓名</th><th>人數</th><th>電話</th><th>需求</th><th>備註</th><th>操作</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- JS 會塞資料進來 -->
-        </tbody>
+        <tbody></tbody>
       </table>
+    </section>
+
+    <!-- 記帳區：正確位置放這裡 -->
+    <section class="card">
+      <h2>記帳（AA 自動分帳）</h2>
+
+      <form id="expense-form" class="form-grid">
+        <label>消費名稱
+          <input type="text" id="exp-name" required>
+        </label>
+
+        <label>金額（NTD）
+          <input type="number" id="exp-amount" required min="1">
+        </label>
+
+        <label>付款人
+          <select id="exp-payer"></select>
+        </label>
+
+        <label class="full">分帳成員
+          <div id="exp-members" class="checkbox-container"></div>
+        </label>
+
+        <button type="submit" class="btn primary">加入記帳</button>
+      </form>
+
+      <h3>記帳紀錄</h3>
+      <table class="table" id="expense-table">
+        <thead><tr><th>項目</th><th>金額</th><th>付款人</th><th>分帳對象</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>結算結果</h3>
+      <ul id="settlement-list" class="settlement"></ul>
     </section>
 
     <!-- 分享提醒 -->
     <section class="card">
       <h2>分享 / 當成 App 使用</h2>
       <ol class="hint-list">
-        <li>把這個網站網址貼到 LINE 家族群組，請大家自己登記。</li>
-        <li>在手機瀏覽器開啟此頁面：
-          <ul>
-            <li><strong>iPhone Safari：</strong>點分享 → 加到主畫面。</li>
-            <li><strong>Android Chrome：</strong>右上角選單 → 安裝 App / 加到主畫面。</li>
-          </ul>
-        </li>
-        <li>之後就可以像 App 一樣，直接點主畫面圖示打開。</li>
+        <li>把這個網站網址貼到 LINE 家族群組。</li>
+        <li>手機瀏覽器 → 加到主畫面即可當 App。</li>
       </ol>
     </section>
 
   </main>
 
   <footer class="footer">
-    <small>家族旅遊小工具 · 純前端 · 可部署於 GitHub Pages</small>
+    <small>家族旅遊小工具 · 純前端 · GitHub Pages</small>
   </footer>
 
   <script src="app.js"></script>
   <script>
-    // 註冊 Service Worker（讓網站可以像 App 一樣、支援離線）
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .catch(err => console.error('Service worker registration failed', err));
+        navigator.serviceWorker.register('service-worker.js');
       });
     }
   </script>
+
 </body>
 </html>

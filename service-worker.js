@@ -1,46 +1,59 @@
-const CACHE_NAME = "family-trip-cache-v1";
-const ASSETS = [
+const CACHE_NAME = "trip-planner-v3-cache-v1";
+const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/icon-512-maskable.png"
 ];
 
+// Install: cache files
 self.addEventListener("install", (event) => {
+  console.log("[ServiceWorker] Install");
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log("[ServiceWorker] Pre-caching offline page");
+      return cache.addAll(FILES_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
+// Activate: cleanup old cache
 self.addEventListener("activate", (event) => {
+  console.log("[ServiceWorker] Activate");
   event.waitUntil(
-    caches.keys().then((keys) =>
+    caches.keys().then((keyList) =>
       Promise.all(
-        keys.map((key) => {
+        keyList.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log("[ServiceWorker] Removing old cache:", key);
             return caches.delete(key);
           }
         })
       )
     )
   );
+  self.clients.claim();
 });
 
+// Fetch: respond from cache first, update in background
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  // 只對 GET 請求做 cache
-  if (req.method !== "GET") return;
-
   event.respondWith(
-    caches.match(req).then((cached) => {
-      return (
-        cached ||
-        fetch(req).catch(() =>
-          // 離線又沒 cache 的話，就回傳首頁避免整個掛掉
-          caches.match("./index.html")
-        )
-      );
+    caches.match(event.request).then((cached) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          // update the cache
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, networkResponse.clone());
+          });
+          return networkResponse;
+        })
+        .catch(() => cached);
+      return cached || fetchPromise;
     })
   );
 });

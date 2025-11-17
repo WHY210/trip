@@ -1,10 +1,14 @@
 {
-    "name": "家族旅遊登記暨行程通知",
-    "short_name": "家族旅遊",
-    "start_url": ".",
+    "name": "Trip Planner v3",
+    "short_name": "TripPlanner",
+    "description": "多人旅行行程管理＋共同記帳＋自動分帳的離線 PWA",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#2563eb",
+    "background_color": "#f3f4f6",
+    "theme_color": "#4f46e5",
+    "orientation": "portrait-primary",
+  
     "icons": [
       {
         "src": "icons/icon.png",
@@ -15,6 +19,12 @@
         "src": "icons/icon.png",
         "sizes": "512x512",
         "type": "image/png"
+      },
+      {
+        "src": "icons/icon.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable"
       }
     ]
   }

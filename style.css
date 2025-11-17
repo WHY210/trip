@@ -13,55 +13,47 @@
   }
   
   /* =========================================================
-     TAB NAVIGATION
+     三欄布局（桌機）— 固定寬度比例
+     左 25% / 中 50% / 右 25%
   ========================================================= */
-  .tab-bar {
+  
+  #layout {
     display: flex;
-    background: #4a6fa5;
+    gap: 1rem;
+    padding: 1rem;
   }
   
-  .tab-btn {
-    flex: 1;
-    padding: .9rem;
-    border: none;
-    background: transparent;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: 0.2s;
+  #col-members {
+    flex: 0 0 25%;
+    min-width: 260px;
   }
   
-  .tab-btn.active {
-    background: #35527a;
+  #col-trip {
+    flex: 0 0 50%;
+    min-width: 380px;
+  }
+  
+  #col-expenses {
+    flex: 0 0 25%;
+    min-width: 260px;
+  }
+  
+  /* 共用欄位設定 */
+  .column {
+    min-width: 0;
+  }
+  
+  /* 標題 */
+  .col-title {
+    font-size: 1.6rem;
     font-weight: bold;
+    margin: 0 0 .8rem 0;
+    color: #2a3f63;
   }
   
   /* =========================================================
-     PAGE VISIBILITY
+     卡片
   ========================================================= */
-  .page {
-    display: none;
-  }
-  .page.active {
-    display: block;
-  }
-  
-  .page-title {
-    margin-top: 1rem;
-    margin-bottom: .5rem;
-    font-size: 1.4rem;
-    color: #35527a;
-  }
-  
-  /* =========================================================
-     LAYOUT & CARD STYLE
-  ========================================================= */
-  .container {
-    max-width: 900px;
-    margin: 1rem auto;
-    padding: 0 1rem;
-  }
-  
   .card {
     background: white;
     padding: 1.2rem;
@@ -79,11 +71,11 @@
   }
   
   /* =========================================================
-     FORMS
+     表單格線
   ========================================================= */
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: .8rem 1rem;
   }
   
@@ -95,7 +87,7 @@
   
   input, textarea, select {
     margin-top: .3rem;
-    padding: .5rem;
+    padding: .55rem .7rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: .9rem;
@@ -110,10 +102,10 @@
   }
   
   /* =========================================================
-     BUTTONS
+     按鈕
   ========================================================= */
   .btn {
-    padding: .55rem 1rem;
+    padding: .65rem 1rem;
     font-size: .9rem;
     border-radius: 8px;
     border: none;
@@ -121,7 +113,7 @@
   }
   
   .btn.primary {
-    background: #4a6fa5;
+    background: #2962ff;
     color: white;
   }
   
@@ -134,24 +126,12 @@
     color: white;
   }
   
-  .btn.small {
-    padding: .3rem .6rem;
-    font-size: .8rem;
+  .btn.full {
+    width: 100%;
   }
   
   /* =========================================================
-     INFO BOX
-  ========================================================= */
-  .info-box {
-    background: #f8fbff;
-    border-left: 4px solid #4a6fa5;
-    padding: .8rem;
-    margin-top: 1rem;
-    font-size: .9rem;
-  }
-  
-  /* =========================================================
-     TABLE
+     表格
   ========================================================= */
   .table {
     width: 100%;
@@ -172,7 +152,7 @@
   }
   
   /* =========================================================
-     MULTI-DAY ITINERARY
+     行程：多日 / 活動
   ========================================================= */
   .day-card {
     background: #fff;
@@ -204,9 +184,6 @@
     display: block;
   }
   
-  /* =========================================================
-     ACTIVITY ITEM
-  ========================================================= */
   .activity {
     padding: .7rem 0;
     border-bottom: 1px solid #eee;
@@ -232,7 +209,7 @@
   }
   
   /* =========================================================
-     ATTENDEE DOTS (B TYPE: color dot + initial)
+     參加色點（B：顏色 + 字）
   ========================================================= */
   .attendees {
     margin-top: .4rem;
@@ -260,15 +237,12 @@
   }
   
   /* =========================================================
-     SETTLEMENT
+     記帳
   ========================================================= */
   .settlement li {
     margin: .3rem 0;
   }
   
-  /* =========================================================
-     CHECKBOX LIST
-  ========================================================= */
   .checkbox-container label {
     display: inline-flex;
     align-items: center;
@@ -277,12 +251,20 @@
   }
   
   /* =========================================================
-     FOOTER (if needed)
+     手機版（行程 → 記帳 → 成員）
   ========================================================= */
-  .footer {
-    text-align: center;
-    margin: 2rem 0;
-    color: #666;
-    font-size: .85rem;
+  @media (max-width: 900px) {
+    #layout {
+      display: block;
+      padding: .5rem;
+    }
+  
+    #col-trip { order: 1; }
+    #col-expenses { order: 2; }
+    #col-members { order: 3; }
+  
+    .column {
+      margin-bottom: 1.5rem;
+    }
   }
   

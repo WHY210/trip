@@ -13,9 +13,9 @@ const MORANDI_COLORS = [
 ];
 
 let state = {
-  members: [], // { id, name, short, colorHex, colorName, note, colorId }
+  members: [],   // { id, name, short, colorHex, colorName, note, colorId }
   schedules: [], // { id, date, time, title, location, memberIds: [] }
-  expenses: [] // { id, date, title, amount, payerId, memberIds: [] }
+  expenses: []   // { id, date, title, amount, payerId, memberIds: [] }
 };
 
 let draggedScheduleId = null;

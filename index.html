@@ -2,179 +2,238 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>家族旅遊工具（成員 / 行程 / 記帳）</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/icon.png" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trip Planner v3 · Multi-Currency</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <div class="app">
     <header class="app-header">
-      <h1>家族旅遊工具</h1>
-      <p>左：成員管理　｜　中：行程表（依日期分組＋拖移排序）　｜　右：記帳＋自動結算</p>
+      <div class="app-title">
+        <span class="emoji">🌏</span>
+        <div>
+          <h1>Trip Planner v3</h1>
+          <p>多人行程＋共同記帳＋自動分帳（離線版）</p>
+        </div>
+      </div>
+      <div class="app-meta">
+        <span class="badge">PWA-ready · localStorage only</span>
+      </div>
     </header>
 
-    <main class="app-layout">
-      <!-- ================= 左：成員管理 ================= -->
-      <section class="panel panel-left">
-        <h2>成員管理</h2>
+    <main class="layout" id="layout">
+      <!-- 成員管理 -->
+      <section class="panel" id="members-panel">
+        <h2 class="panel-title">成員管理 <span class="subtitle">Members</span></h2>
 
         <div class="card">
-          <h3>新增成員</h3>
+          <h3 class="card-title">新增成員 / Add Member</h3>
           <form id="member-form" class="form-grid">
-            <label>
-              姓名
-              <input id="member-name" type="text" required />
-            </label>
+            <div class="form-field">
+              <label for="member-name">姓名</label>
+              <input id="member-name" type="text" required placeholder="例如：Alice" />
+            </div>
 
-            <label>
-              縮寫（1–2 字，會顯示在小點上）
-              <input id="member-short" type="text" maxlength="2" required />
-            </label>
+            <div class="form-field">
+              <label for="member-short">縮寫</label>
+              <input id="member-short" type="text" maxlength="2" required placeholder="A" />
+            </div>
 
-            <label>
-              顏色（莫蘭迪）
+            <div class="form-field">
+              <label for="member-color">顏色（莫蘭迪）</label>
               <select id="member-color">
-                <option value="">自動指派顏色</option>
+                <option value="">自動指派 / Auto</option>
               </select>
-            </label>
+            </div>
 
-            <label class="full">
-              備註
-              <input id="member-note" type="text" />
-            </label>
+            <div class="form-field form-field-full">
+              <label for="member-note">備註</label>
+              <input id="member-note" type="text" placeholder="可空白…" />
+            </div>
 
-            <button type="submit" class="btn primary full">新增成員</button>
+            <div class="form-actions form-field-full">
+              <button type="submit" class="btn primary">新增成員</button>
+            </div>
           </form>
         </div>
 
         <div class="card">
-          <h3>成員列表</h3>
-          <table class="table" id="member-table">
-            <thead>
-              <tr>
-                <th>顏色</th>
-                <th>姓名</th>
-                <th>縮寫</th>
-                <th>備註</th>
-                <th>刪除</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 成員由 JS 動態插入 -->
-            </tbody>
-          </table>
+          <h3 class="card-title">成員列表 / Members</h3>
+          <div id="member-list" class="member-list empty-hint">
+            <!-- 動態注入 -->
+          </div>
         </div>
       </section>
 
-      <!-- ================= 中：行程表 ================= -->
-      <section class="panel panel-middle">
-        <h2>行程表</h2>
+      <!-- 行程表 -->
+      <section class="panel" id="schedule-panel">
+        <h2 class="panel-title">行程表 <span class="subtitle">Schedule</span></h2>
 
         <div class="card">
-          <h3>新增行程</h3>
+          <h3 class="card-title">新增行程 / Add Schedule</h3>
           <form id="schedule-form" class="form-grid">
-            <label>
-              日期
+            <div class="form-field">
+              <label for="schedule-date">日期</label>
               <input id="schedule-date" type="date" required />
-            </label>
+            </div>
 
-            <label>
-              時間
+            <div class="form-field">
+              <label for="schedule-time">時間（可空）</label>
               <input id="schedule-time" type="time" />
-            </label>
+            </div>
 
-            <label class="full">
-              行程名稱
-              <input id="schedule-title" type="text" required />
-            </label>
+            <div class="form-field">
+              <label for="schedule-title">行程名稱</label>
+              <input id="schedule-title" type="text" required placeholder="早餐 / 出海 / 散步…" />
+            </div>
 
-            <label class="full">
-              地點 / 備註
-              <input id="schedule-location" type="text" />
-            </label>
+            <div class="form-field">
+              <label for="schedule-location">地點 / 備註</label>
+              <input id="schedule-location" type="text" placeholder="Shibuya, 景點備註…" />
+            </div>
 
-            <div class="full">
-              <span class="label-title">參與成員（打勾顏色小點）</span>
-              <div id="schedule-members" class="member-checkboxes">
-                <!-- 勾選成員由 JS 動態插入 -->
+            <div class="form-field form-field-full">
+              <label>參與成員</label>
+              <div id="schedule-members" class="chip-group">
+                <!-- 動態注入 -->
               </div>
             </div>
 
-            <button type="submit" class="btn primary full">新增行程</button>
+            <div class="form-actions form-field-full">
+              <button type="submit" class="btn primary">新增行程</button>
+            </div>
           </form>
         </div>
 
         <div class="card">
-          <h3>行程列表（依日期分組，可拖移排序）</h3>
-          <ul id="schedule-list" class="item-list schedule-group-list">
-            <!-- 行程項目由 JS 動態插入 -->
-          </ul>
-          <p class="hint-text">提示：同一天的行程可以拖曳排序，點日期可以收合 / 展開。</p>
+          <h3 class="card-title">
+            行程列表 / Timeline
+            <span class="hint">依日期分組，可收合、拖曳排序（同日）</span>
+          </h3>
+          <div id="schedule-list" class="schedule-list empty-hint">
+            <!-- 動態注入 -->
+          </div>
         </div>
       </section>
 
-      <!-- ================= 右：記帳 ================= -->
-      <section class="panel panel-right">
-        <h2>記帳</h2>
+      <!-- 記帳＋結算 -->
+      <section class="panel" id="expenses-panel">
+        <h2 class="panel-title">記帳＋結算 <span class="subtitle">Expenses & Settlement</span></h2>
 
+        <!-- 匯率設定 -->
         <div class="card">
-          <h3>新增記帳</h3>
-          <form id="expense-form" class="form-grid">
-            <label>
-              日期
-              <input id="expense-date" type="date" />
-            </label>
-
-            <label>
-              金額
-              <input id="expense-amount" type="number" step="1" min="0" required />
-            </label>
-
-            <label class="full">
-              項目名稱
-              <input id="expense-title" type="text" required />
-            </label>
-
-            <label>
-              付款人
-              <select id="expense-payer">
-                <!-- 付款人選單由 JS 動態插入 -->
+          <h3 class="card-title">
+            🌏 匯率設定 / Exchange Rates
+            <span class="hint">主幣別：TWD，新舊紀錄使用各自紀錄的匯率</span>
+          </h3>
+          <div class="form-grid small">
+            <div class="form-field">
+              <label>主幣別 / Base Currency</label>
+              <select id="base-currency" disabled>
+                <option value="TWD">TWD（新台幣）</option>
               </select>
-            </label>
+            </div>
 
-            <div class="full">
-              <span class="label-title">這筆是哪些成員的花費？（打勾顏色小點，平均分攤）</span>
-              <div id="expense-members" class="member-checkboxes">
-                <!-- 勾選成員由 JS 動態插入 -->
+            <div class="form-field">
+              <label for="rate-jpy">1 JPY = ? TWD</label>
+              <input id="rate-jpy" type="number" step="0.0001" min="0" />
+            </div>
+
+            <div class="form-field">
+              <label for="rate-krw">1 KRW = ? TWD</label>
+              <input id="rate-krw" type="number" step="0.0001" min="0" />
+            </div>
+
+            <div class="form-actions form-field-full">
+              <button id="save-rates" class="btn secondary" type="button">更新匯率（影響新記帳）</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 新增記帳 -->
+        <div class="card">
+          <h3 class="card-title">新增記帳 / Add Expense</h3>
+          <form id="expense-form" class="form-grid">
+            <div class="form-field">
+              <label for="expense-date">日期（可空）</label>
+              <input id="expense-date" type="date" />
+            </div>
+
+            <div class="form-field">
+              <label for="expense-amount">金額</label>
+              <input id="expense-amount" type="number" step="0.01" min="0" required placeholder="900" />
+            </div>
+
+            <div class="form-field">
+              <label for="expense-currency">幣別</label>
+              <select id="expense-currency" required>
+                <option value="TWD">TWD</option>
+                <option value="JPY">JPY</option>
+                <option value="KRW">KRW</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="expense-rate">匯率（可覆寫）</label>
+              <input id="expense-rate" type="number" step="0.0001" min="0" required />
+            </div>
+
+            <div class="form-field">
+              <label for="expense-title">項目名稱</label>
+              <input id="expense-title" type="text" required placeholder="晚餐 / 交通…" />
+            </div>
+
+            <div class="form-field">
+              <label for="expense-payer">付款人（可空）</label>
+              <select id="expense-payer">
+                <option value="">共同付款 / None</option>
+              </select>
+            </div>
+
+            <div class="form-field form-field-full">
+              <label>分攤成員</label>
+              <div id="expense-members" class="chip-group">
+                <!-- 動態注入 -->
               </div>
             </div>
 
-            <button type="submit" class="btn primary full">新增記帳</button>
+            <div class="form-actions form-field-full">
+              <button type="submit" class="btn primary">新增記帳</button>
+            </div>
           </form>
         </div>
 
+        <!-- 記帳列表 -->
         <div class="card">
-          <h3>記帳紀錄</h3>
-          <ul id="expense-list" class="item-list">
-            <!-- 記帳項目由 JS 動態插入 -->
+          <h3 class="card-title">記帳列表 / Expenses</h3>
+          <div id="expense-list" class="expense-list empty-hint">
+            <!-- 動態注入 -->
+          </div>
+        </div>
+
+        <!-- 總結＋pairwise -->
+        <div class="card">
+          <h3 class="card-title">個人結餘 / Balance Summary</h3>
+          <ul id="balance-summary" class="balance-list empty-hint">
+            <!-- 動態注入 -->
           </ul>
         </div>
 
         <div class="card">
-          <h3>結算 Summary</h3>
-          <div id="balance-summary"></div>
-          <hr />
-          <h4>兩兩結算建議</h4>
-          <div id="pairwise-summary"></div>
-          <p class="hint-text">說明：每筆記帳金額會在勾選成員之間平均分攤，付款人視為代墊者。</p>
+          <h3 class="card-title">兩兩結算 / Pairwise Settlement</h3>
+          <ul id="pairwise-list" class="pairwise-list empty-hint">
+            <!-- 動態注入 -->
+          </ul>
         </div>
       </section>
     </main>
+
+    <!-- 手機底部 Tab 導覽 -->
+    <nav class="bottom-tabs" id="bottom-tabs">
+      <button class="tab-btn active" data-target="members-panel">成員</button>
+      <button class="tab-btn" data-target="schedule-panel">行程</button>
+      <button class="tab-btn" data-target="expenses-panel">記帳</button>
+    </nav>
   </div>
 
   <script src="app.js"></script>

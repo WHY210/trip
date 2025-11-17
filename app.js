@@ -14,14 +14,10 @@ let data = {
 };
 
 // =========================================================
-// DOM 取得
+// DOM 取得（符合你的新 HTML）
 // =========================================================
 
-// Tabs
-const tabButtons = document.querySelectorAll(".tab-btn");
-const pages = document.querySelectorAll(".page");
-
-// Trip page
+// Trip DOM
 const tripForm = document.getElementById("trip-form");
 const tripDisplay = document.getElementById("trip-display");
 
@@ -31,12 +27,12 @@ const daySelect = document.getElementById("day-select");
 const addActivityBtn = document.getElementById("add-activity");
 const daysContainer = document.getElementById("days-container");
 
-// Members page
+// Members DOM
 const memberForm = document.getElementById("member-form");
 const memberTableBody = document.querySelector("#member-table tbody");
 const totalMembers = document.getElementById("total-members");
 
-// Expenses page
+// Expenses DOM
 const expForm = document.getElementById("expense-form");
 const expPayer = document.getElementById("exp-payer");
 const expMembersBox = document.getElementById("exp-members");
@@ -67,22 +63,7 @@ function initial(name) {
 }
 
 // =========================================================
-// Tab Navigation
-// =========================================================
-tabButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    tabButtons.forEach(b => b.classList.remove("active"));
-    pages.forEach(p => p.classList.remove("active"));
-
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.page).classList.add("active");
-
-    save();
-  });
-});
-
-// =========================================================
-// Trip Info (基本行程資訊)
+// Trip Info（基本行程資訊）
 // =========================================================
 function renderTrip() {
   const t = data.trip;
@@ -118,7 +99,7 @@ tripForm.addEventListener("submit", (e) => {
 });
 
 // =========================================================
-// 成員管理
+// Members（家族成員）
 // =========================================================
 function renderMembers() {
   memberTableBody.innerHTML = "";
@@ -130,7 +111,9 @@ function renderMembers() {
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${esc(m.name)}</td>
-      <td><div style="width:18px;height:18px;border-radius:50%;background:${m.color};"></div></td>
+      <td>
+        <div style="width:18px;height:18px;border-radius:50%;background:${m.color};"></div>
+      </td>
       <td>${esc(m.phone)}</td>
       <td>${esc(m.note)}</td>
       <td>
@@ -189,7 +172,7 @@ memberTableBody.addEventListener("click", (e) => {
 });
 
 // =========================================================
-// 新增天數 Day
+// Days（天數）
 // =========================================================
 function renderDaySelect() {
   daySelect.innerHTML = "";
@@ -210,7 +193,7 @@ newDayBtn.addEventListener("click", () => {
 });
 
 // =========================================================
-// 新增活動 Activity
+// Activities（活動）
 // =========================================================
 addActivityBtn.addEventListener("click", () => {
   const dayIdx = Number(daySelect.value);
@@ -226,7 +209,13 @@ addActivityBtn.addEventListener("click", () => {
   const attendees = {};
   data.members.forEach((_, i) => attendees[i] = false);
 
-  data.days[dayIdx].activities.push({ time, title, location, link, attendees });
+  data.days[dayIdx].activities.push({
+    time,
+    title,
+    location,
+    link,
+    attendees
+  });
 
   save();
   renderAllDays();
@@ -238,7 +227,7 @@ addActivityBtn.addEventListener("click", () => {
 });
 
 // =========================================================
-// 顯示全部 Day + Activity
+// 顯示所有天數 + 活動
 // =========================================================
 function renderAllDays() {
   daysContainer.innerHTML = "";
@@ -254,7 +243,7 @@ function renderAllDays() {
     const content = document.createElement("div");
     content.className = "day-content";
 
-    // 活動列表
+    // 逐個活動
     d.activities.forEach((a, actIdx) => {
       const act = document.createElement("div");
       act.className = "activity";
@@ -263,14 +252,10 @@ function renderAllDays() {
         <div class="activity-time">${esc(a.time)}</div>
         <div class="activity-title">${esc(a.title)}</div>
         <div class="activity-location">${esc(a.location)}</div>
-        ${
-          a.link
-          ? `<a href="${esc(a.link)}" target="_blank">🔗 地圖</a>`
-          : ""
-        }
+        ${a.link ? `<a href="${esc(a.link)}" target="_blank">🔗 地圖</a>` : ""}
       `;
 
-      // 參加者 dots
+      // 參加者 dot
       const box = document.createElement("div");
       box.className = "attendees";
 
@@ -306,7 +291,7 @@ function renderAllDays() {
 }
 
 // =========================================================
-// 記帳（Expenses）
+// Expenses（記帳）
 // =========================================================
 function renderExpenseMembers() {
   expPayer.innerHTML = "";

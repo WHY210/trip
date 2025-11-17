@@ -5,10 +5,8 @@
   <title>家族旅遊工具（行程 / 成員 / 記帳）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -16,99 +14,13 @@
 <body>
 
   <!-- ========================================================= -->
-  <!-- 頂部 TAB 切換 -->
+  <!-- 三欄區塊（桌機）/ 單欄堆疊（手機） -->
   <!-- ========================================================= -->
-  <header class="tab-bar">
-    <button class="tab-btn active" data-page="page-trip">行程</button>
-    <button class="tab-btn" data-page="page-members">成員</button>
-    <button class="tab-btn" data-page="page-expenses">記帳</button>
-  </header>
+  <main id="layout">
 
-  <main class="container">
-
-    <!-- ========================================================= -->
-    <!-- 頁面 1：行程 Trip -->
-    <!-- ========================================================= -->
-    <section id="page-trip" class="page active">
-
-      <h1 class="page-title">行程資訊</h1>
-
-      <!-- 基本行程資訊 -->
-      <div class="card">
-        <form id="trip-form" class="form-grid">
-          <label>
-            旅遊名稱
-            <input id="trip-title" placeholder="2025 花東三天兩夜">
-          </label>
-
-          <label>
-            日期
-            <input id="trip-date" placeholder="2025/04/03–04/05">
-          </label>
-
-          <label>
-            集合地點
-            <input id="trip-location" placeholder="台北車站 東三門">
-          </label>
-
-          <label class="full">
-            備註
-            <textarea id="trip-note" rows="2"></textarea>
-          </label>
-
-          <button type="submit" class="btn primary full">儲存行程資訊</button>
-        </form>
-
-        <div id="trip-display" class="info-box"></div>
-      </div>
-
-      <!-- 新增活動 + 新增天數 -->
-      <div class="card">
-        <h2>新增行程活動</h2>
-
-        <div class="form-grid">
-
-          <label>
-            天數
-            <select id="day-select"></select>
-          </label>
-
-          <label>
-            時間
-            <input type="time" id="act-time">
-          </label>
-
-          <label>
-            行程名稱
-            <input id="act-title" placeholder="早餐 / 手作 / 海邊…">
-          </label>
-
-          <label class="full">
-            地點
-            <input id="act-location">
-          </label>
-
-          <label class="full">
-            Google Map 連結
-            <input id="act-link" placeholder="https://maps.google.com/...">
-          </label>
-
-          <button id="add-activity" class="btn primary">加入活動</button>
-          <button id="new-day" class="btn secondary">新增一天（Day）</button>
-
-        </div>
-      </div>
-
-      <div id="days-container"></div>
-
-    </section>
-
-    <!-- ========================================================= -->
-    <!-- 頁面 2：成員 Members -->
-    <!-- ========================================================= -->
-    <section id="page-members" class="page">
-
-      <h1 class="page-title">家族成員</h1>
+    <!-- 左欄：成員 -->
+    <section id="col-members" class="column">
+      <h1 class="col-title">成員</h1>
 
       <div class="card">
         <form id="member-form" class="form-grid">
@@ -147,18 +59,84 @@
           </thead>
           <tbody></tbody>
         </table>
-
         <p id="total-members">總人數：0 人</p>
       </div>
-
     </section>
 
-    <!-- ========================================================= -->
-    <!-- 頁面 3：記帳 Expenses -->
-    <!-- ========================================================= -->
-    <section id="page-expenses" class="page">
+    <!-- 中欄：行程 -->
+    <section id="col-trip" class="column">
+      <h1 class="col-title">行程</h1>
 
-      <h1 class="page-title">記帳（AA 分帳）</h1>
+      <!-- 基本行程設定 -->
+      <div class="card">
+        <form id="trip-form" class="form-grid">
+          <label>
+            旅遊名稱
+            <input id="trip-title">
+          </label>
+
+          <label>
+            日期
+            <input id="trip-date">
+          </label>
+
+          <label>
+            集合地點
+            <input id="trip-location">
+          </label>
+
+          <label class="full">
+            備註
+            <textarea id="trip-note" rows="2"></textarea>
+          </label>
+
+          <button class="btn primary full">儲存行程資訊</button>
+        </form>
+
+        <div id="trip-display" class="info-box"></div>
+      </div>
+
+      <!-- 新增活動 / 天數 -->
+      <div class="card">
+        <h2>新增活動</h2>
+
+        <div class="form-grid">
+          <label>
+            天數
+            <select id="day-select"></select>
+          </label>
+
+          <label>
+            時間
+            <input type="time" id="act-time">
+          </label>
+
+          <label>
+            行程名稱
+            <input id="act-title">
+          </label>
+
+          <label class="full">
+            地點
+            <input id="act-location">
+          </label>
+
+          <label class="full">
+            Google Map 連結
+            <input id="act-link">
+          </label>
+
+          <button id="add-activity" class="btn primary">加入活動</button>
+          <button id="new-day" class="btn secondary">新增一天</button>
+        </div>
+      </div>
+
+      <div id="days-container"></div>
+    </section>
+
+    <!-- 右欄：記帳 -->
+    <section id="col-expenses" class="column">
+      <h1 class="col-title">記帳</h1>
 
       <div class="card">
         <form id="expense-form" class="form-grid">
@@ -183,12 +161,12 @@
             <div id="exp-members" class="checkbox-container"></div>
           </label>
 
-          <button class="btn primary">加入記帳</button>
+          <button class="btn primary full">加入記帳</button>
         </form>
       </div>
 
       <div class="card">
-        <h2>記帳紀錄</h2>
+        <h2>紀錄</h2>
         <table class="table" id="expense-table">
           <thead><tr><th>項目</th><th>金額</th><th>付款人</th><th>分帳對象</th></tr></thead>
           <tbody></tbody>
@@ -196,7 +174,7 @@
       </div>
 
       <div class="card">
-        <h2>結算結果</h2>
+        <h2>結算</h2>
         <ul id="settlement-list" class="settlement"></ul>
       </div>
 
@@ -205,6 +183,5 @@
   </main>
 
   <script src="app.js"></script>
-
 </body>
 </html>

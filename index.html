@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>家族旅遊登記暨行程通知</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- iOS 加到主畫面圖示 & 標題 -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="家族旅遊" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>家族旅遊登記暨行程通知</h1>
+    <p class="subtitle">家族旅遊資訊集中管理、報名登記、行程公告，一個網站搞定</p>
+  </header>
+
+  <main class="container">
+
+    <!-- 行程設定區 -->
+    <section class="card">
+      <h2>行程資訊設定（管理人用）</h2>
+      <form id="trip-form" class="form-grid">
+        <label>
+          旅遊名稱
+          <input type="text" id="trip-title" placeholder="例如：2025 花東三天兩夜" required>
+        </label>
+        <label>
+          日期
+          <input type="text" id="trip-date" placeholder="例如：2025/04/03–04/05">
+        </label>
+        <label>
+          集合地點
+          <input type="text" id="trip-location" placeholder="例如：台北車站東三門">
+        </label>
+        <label class="full">
+          行程簡介／重要提醒
+          <textarea id="trip-note" rows="3" placeholder="例如：請自備個人藥品、防曬、泳衣…"></textarea>
+        </label>
+        <button type="submit" class="btn primary">儲存行程資訊</button>
+      </form>
+
+      <div class="info-box" id="trip-display">
+        <!-- 這裡由 JS 動態顯示行程概要，方便分享給家人看 -->
+      </div>
+    </section>
+
+    <!-- 報名表單 -->
+    <section class="card">
+      <h2>家族成員報名</h2>
+      <p class="hint">👉 把這個網站網址丟到家族群組，每個人可以自己填寫報名資料。</p>
+      <form id="member-form" class="form-grid">
+        <label>
+          姓名
+          <input type="text" id="member-name" placeholder="你的名字" required>
+        </label>
+        <label>
+          人數
+          <input type="number" id="member-count" min="1" value="1">
+        </label>
+        <label>
+          連絡電話
+          <input type="tel" id="member-phone" placeholder="手機或市話">
+        </label>
+        <label>
+          飲食／住宿需求
+          <input type="text" id="member-diet" placeholder="吃素、不吃牛、需要嬰兒床等">
+        </label>
+        <label class="full">
+          備註
+          <textarea id="member-note" rows="2" placeholder="其他想跟主揪說的"></textarea>
+        </label>
+        <button type="submit" class="btn primary">送出報名</button>
+      </form>
+    </section>
+
+    <!-- 報名清單 -->
+    <section class="card">
+      <h2>目前報名清單</h2>
+      <div class="list-header">
+        <span id="total-members">總人數：0 人</span>
+        <div class="list-actions">
+          <button class="btn small" id="export-json">匯出 JSON（給 GitHub 備份）</button>
+          <label class="btn small secondary">
+            匯入 JSON
+            <input type="file" id="import-json" accept="application/json" hidden>
+          </label>
+          <button class="btn small danger" id="clear-data">清空本機資料</button>
+        </div>
+      </div>
+
+      <table class="table" id="member-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>姓名</th>
+            <th>人數</th>
+            <th>電話</th>
+            <th>需求</th>
+            <th>備註</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- JS 會塞資料進來 -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 分享提醒 -->
+    <section class="card">
+      <h2>分享 / 當成 App 使用</h2>
+      <ol class="hint-list">
+        <li>把這個網站網址貼到 LINE 家族群組，請大家自己登記。</li>
+        <li>在手機瀏覽器開啟此頁面：
+          <ul>
+            <li><strong>iPhone Safari：</strong>點分享 → 加到主畫面。</li>
+            <li><strong>Android Chrome：</strong>右上角選單 → 安裝 App / 加到主畫面。</li>
+          </ul>
+        </li>
+        <li>之後就可以像 App 一樣，直接點主畫面圖示打開。</li>
+      </ol>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <small>家族旅遊小工具 · 純前端 · 可部署於 GitHub Pages</small>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // 註冊 Service Worker（讓網站可以像 App 一樣、支援離線）
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(err => console.error('Service worker registration failed', err));
+      });
+    }
+  </script>
+</body>
+</html>

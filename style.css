@@ -1,61 +1,90 @@
 /* =========================================================
-   基本排版
+   RESET
 ========================================================= */
-body {
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
     margin: 0;
     font-family: "Noto Sans TC", system-ui, sans-serif;
     background: #f4f6f8;
     color: #222;
   }
   
-  .topbar {
+  /* =========================================================
+     TAB NAVIGATION
+  ========================================================= */
+  .tab-bar {
+    display: flex;
     background: #4a6fa5;
+  }
+  
+  .tab-btn {
+    flex: 1;
+    padding: .9rem;
+    border: none;
+    background: transparent;
     color: white;
-    padding: 1.2rem;
-    text-align: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.2s;
   }
   
-  .topbar h1 {
-    margin: 0;
-    font-size: 1.6rem;
+  .tab-btn.active {
+    background: #35527a;
+    font-weight: bold;
   }
   
-  .subtitle {
-    margin-top: .3rem;
-    font-size: .9rem;
-    opacity: .9;
+  /* =========================================================
+     PAGE VISIBILITY
+  ========================================================= */
+  .page {
+    display: none;
+  }
+  .page.active {
+    display: block;
   }
   
+  .page-title {
+    margin-top: 1rem;
+    margin-bottom: .5rem;
+    font-size: 1.4rem;
+    color: #35527a;
+  }
+  
+  /* =========================================================
+     LAYOUT & CARD STYLE
+  ========================================================= */
   .container {
     max-width: 900px;
     margin: 1rem auto;
     padding: 0 1rem;
   }
   
-  /* =========================================================
-     卡片 Card
-  ========================================================= */
   .card {
     background: white;
-    border-radius: 12px;
     padding: 1.2rem;
     margin-bottom: 1.2rem;
+    border-radius: 12px;
     box-shadow: 0 2px 8px #0001;
   }
   
   .card h2 {
     margin-top: 0;
+    margin-bottom: .8rem;
     border-left: 4px solid #4a6fa5;
     padding-left: .5rem;
+    font-size: 1.1rem;
   }
   
   /* =========================================================
-     表單 Form Grid
+     FORMS
   ========================================================= */
   .form-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: .8rem 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
   
   .form-grid label {
@@ -67,24 +96,28 @@ body {
   input, textarea, select {
     margin-top: .3rem;
     padding: .5rem;
-    font-size: .9rem;
     border: 1px solid #ccc;
     border-radius: 6px;
+    font-size: .9rem;
   }
   
   textarea {
     resize: vertical;
   }
   
+  .full {
+    grid-column: 1 / -1;
+  }
+  
   /* =========================================================
-     Buttons
+     BUTTONS
   ========================================================= */
   .btn {
     padding: .55rem 1rem;
+    font-size: .9rem;
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    font-size: .9rem;
   }
   
   .btn.primary {
@@ -107,12 +140,22 @@ body {
   }
   
   /* =========================================================
-     會員表格
+     INFO BOX
+  ========================================================= */
+  .info-box {
+    background: #f8fbff;
+    border-left: 4px solid #4a6fa5;
+    padding: .8rem;
+    margin-top: 1rem;
+    font-size: .9rem;
+  }
+  
+  /* =========================================================
+     TABLE
   ========================================================= */
   .table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: .8rem;
   }
   
   .table th {
@@ -129,44 +172,23 @@ body {
   }
   
   /* =========================================================
-     info box
-  ========================================================= */
-  .info-box {
-    background: #f8fbff;
-    border-left: 4px solid #4a6fa5;
-    padding: .8rem;
-    margin-top: 1rem;
-  }
-  
-  /* =========================================================
-     Checkbox container
-  ========================================================= */
-  .checkbox-container label {
-    display: inline-flex;
-    align-items: center;
-    margin-right: 10px;
-    margin-bottom: 6px;
-  }
-  
-  /* =========================================================
-     Day（多日行程）Accordion
+     MULTI-DAY ITINERARY
   ========================================================= */
   .day-card {
+    background: #fff;
     border: 1px solid #d0d7de;
     border-radius: 10px;
     margin-bottom: .8rem;
     overflow: hidden;
-    background: #fff;
   }
   
   .day-header {
     background: #eef2f7;
     padding: .8rem 1rem;
     cursor: pointer;
+    font-weight: bold;
     display: flex;
     justify-content: space-between;
-    font-weight: bold;
-    font-size: 1rem;
   }
   
   .day-header:hover {
@@ -174,8 +196,8 @@ body {
   }
   
   .day-content {
+    display: none;
     padding: 1rem;
-    display: none;   /* 手風琴效果 */
   }
   
   .day-content.open {
@@ -183,20 +205,15 @@ body {
   }
   
   /* =========================================================
-     行程項目 Activity
+     ACTIVITY ITEM
   ========================================================= */
   .activity {
+    padding: .7rem 0;
     border-bottom: 1px solid #eee;
-    padding: .6rem 0;
   }
   
   .activity:last-child {
     border-bottom: none;
-  }
-  
-  .activity-title {
-    font-weight: bold;
-    font-size: .95rem;
   }
   
   .activity-time {
@@ -204,31 +221,36 @@ body {
     font-size: .85rem;
   }
   
+  .activity-title {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
   .activity-location {
+    margin-top: .2rem;
     font-size: .85rem;
-    margin-top: .15rem;
   }
   
   /* =========================================================
-     參加者顯示（Colored Dot + Initial）
+     ATTENDEE DOTS (B TYPE: color dot + initial)
   ========================================================= */
   .attendees {
     margin-top: .4rem;
     display: flex;
     flex-wrap: wrap;
-    gap: .4rem;
+    gap: .3rem;
   }
   
   .dot {
-    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: .75rem;
+    color: white;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    font-size: .7rem;
-    border-radius: 50%;
     cursor: pointer;
-    color: white;
     font-weight: bold;
   }
   
@@ -238,14 +260,24 @@ body {
   }
   
   /* =========================================================
-     Settlement
+     SETTLEMENT
   ========================================================= */
   .settlement li {
-    padding: .3rem 0;
+    margin: .3rem 0;
   }
   
   /* =========================================================
-     Footer
+     CHECKBOX LIST
+  ========================================================= */
+  .checkbox-container label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    margin-bottom: 6px;
+  }
+  
+  /* =========================================================
+     FOOTER (if needed)
   ========================================================= */
   .footer {
     text-align: center;

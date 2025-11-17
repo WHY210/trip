@@ -2,218 +2,209 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>家族旅遊工具（行程 + 報名 + 記帳）</title>
+  <title>家族旅遊工具（行程 / 成員 / 記帳）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="家族旅遊" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <header class="topbar">
-    <h1>家族旅遊工具</h1>
-    <p class="subtitle">行程資訊 × 家族報名 × AA 分帳（多日制）</p>
+
+  <!-- ========================================================= -->
+  <!-- 頂部 TAB 切換 -->
+  <!-- ========================================================= -->
+  <header class="tab-bar">
+    <button class="tab-btn active" data-page="page-trip">行程</button>
+    <button class="tab-btn" data-page="page-members">成員</button>
+    <button class="tab-btn" data-page="page-expenses">記帳</button>
   </header>
 
   <main class="container">
 
     <!-- ========================================================= -->
-    <!-- 行程設定（主揪） -->
+    <!-- 頁面 1：行程 Trip -->
     <!-- ========================================================= -->
-    <section class="card">
-      <h2>基本行程資訊</h2>
-      <form id="trip-form" class="form-grid">
-        <label>
-          旅遊名稱
-          <input type="text" id="trip-title" placeholder="例如：2025 花東三天兩夜" required>
-        </label>
+    <section id="page-trip" class="page active">
 
-        <label>
-          日期
-          <input type="text" id="trip-date" placeholder="例如：2025/04/03–04/05">
-        </label>
+      <h1 class="page-title">行程資訊</h1>
 
-        <label>
-          集合地點
-          <input type="text" id="trip-location" placeholder="例如：台北車站東三門">
-        </label>
+      <!-- 基本行程資訊 -->
+      <div class="card">
+        <form id="trip-form" class="form-grid">
+          <label>
+            旅遊名稱
+            <input id="trip-title" placeholder="2025 花東三天兩夜">
+          </label>
 
-        <label class="full">
-          行程簡介 / 備註
-          <textarea id="trip-note" rows="2"></textarea>
-        </label>
+          <label>
+            日期
+            <input id="trip-date" placeholder="2025/04/03–04/05">
+          </label>
 
-        <button type="submit" class="btn primary">儲存行程資訊</button>
-      </form>
+          <label>
+            集合地點
+            <input id="trip-location" placeholder="台北車站 東三門">
+          </label>
 
-      <div class="info-box" id="trip-display"></div>
-    </section>
+          <label class="full">
+            備註
+            <textarea id="trip-note" rows="2"></textarea>
+          </label>
 
-    <!-- ========================================================= -->
-    <!-- 家族成員報名 -->
-    <!-- ========================================================= -->
-    <section class="card">
-      <h2>家族成員報名</h2>
+          <button type="submit" class="btn primary full">儲存行程資訊</button>
+        </form>
 
-      <form id="member-form" class="form-grid">
+        <div id="trip-display" class="info-box"></div>
+      </div>
 
-        <label>
-          姓名
-          <input type="text" id="member-name" required>
-        </label>
+      <!-- 新增活動 + 新增天數 -->
+      <div class="card">
+        <h2>新增行程活動</h2>
 
-        <label>
-          代表人數
-          <input type="number" id="member-count" value="1" min="1">
-        </label>
+        <div class="form-grid">
 
-        <label>
-          顏色（行程顯示用）
-          <input type="text" id="member-color" placeholder="#FF8800 或任何字串">
-        </label>
+          <label>
+            天數
+            <select id="day-select"></select>
+          </label>
 
-        <label>
-          電話
-          <input type="text" id="member-phone">
-        </label>
+          <label>
+            時間
+            <input type="time" id="act-time">
+          </label>
 
-        <label class="full">
-          飲食 / 備註
-          <textarea id="member-note"></textarea>
-        </label>
+          <label>
+            行程名稱
+            <input id="act-title" placeholder="早餐 / 手作 / 海邊…">
+          </label>
 
-        <button type="submit" class="btn primary">加入成員</button>
-      </form>
+          <label class="full">
+            地點
+            <input id="act-location">
+          </label>
 
-      <h3>成員列表</h3>
-      <table class="table" id="member-table">
-        <thead>
-          <tr>
-            <th>#</th><th>姓名</th><th>人數</th><th>顏色</th><th>電話</th><th>備註</th><th>操作</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <p id="total-members">總人數：0 人</p>
-    </section>
+          <label class="full">
+            Google Map 連結
+            <input id="act-link" placeholder="https://maps.google.com/...">
+          </label>
 
-    <!-- ========================================================= -->
-    <!-- 多日行程（Day1、Day2...） -->
-    <!-- ========================================================= -->
-    <section class="card">
-      <h2>行程（多日制）</h2>
-      <p class="hint">主揪可以新增多天行程，每一天可以加入多個活動。下方彩色圓點 + 名字縮寫代表參加者。</p>
+          <button id="add-activity" class="btn primary">加入活動</button>
+          <button id="new-day" class="btn secondary">新增一天（Day）</button>
 
-      <div class="form-grid">
-
-        <label>
-          天數
-          <select id="day-select"></select>
-        </label>
-
-        <label>
-          時間
-          <input type="time" id="act-time">
-        </label>
-
-        <label>
-          行程名稱
-          <input type="text" id="act-title" placeholder="例如：早餐、海邊散步…">
-        </label>
-
-        <label>
-          地點
-          <input type="text" id="act-location" placeholder="地點名稱">
-        </label>
-
-        <label class="full">
-          超連結（Google Maps）
-          <input type="text" id="act-link" placeholder="https://maps.google.com/xxx">
-        </label>
-
-        <button id="add-activity" class="btn primary">加入行程</button>
-        <button id="new-day" class="btn secondary">新增一天（Day）</button>
+        </div>
       </div>
 
       <div id="days-container"></div>
+
     </section>
 
     <!-- ========================================================= -->
-    <!-- 記帳（AA 分帳） -->
+    <!-- 頁面 2：成員 Members -->
     <!-- ========================================================= -->
-    <section class="card">
-      <h2>記帳（AA 自動分帳）</h2>
+    <section id="page-members" class="page">
 
-      <form id="expense-form" class="form-grid">
+      <h1 class="page-title">家族成員</h1>
 
-        <label>
-          消費名稱
-          <input type="text" id="exp-name" required>
-        </label>
+      <div class="card">
+        <form id="member-form" class="form-grid">
 
-        <label>
-          金額（NTD）
-          <input type="number" id="exp-amount" required>
-        </label>
+          <label>
+            姓名
+            <input id="member-name" required>
+          </label>
 
-        <label>
-          付款人
-          <select id="exp-payer"></select>
-        </label>
+          <label>
+            顏色（#ff8800）
+            <input id="member-color" placeholder="#ff8800">
+          </label>
 
-        <label class="full">
-          分帳成員
-          <div id="exp-members" class="checkbox-container"></div>
-        </label>
+          <label>
+            電話
+            <input id="member-phone">
+          </label>
 
-        <button type="submit" class="btn primary">加入記帳</button>
-      </form>
+          <label class="full">
+            備註
+            <textarea id="member-note" rows="2"></textarea>
+          </label>
 
-      <h3>記帳紀錄</h3>
-      <table class="table" id="expense-table">
-        <thead><tr><th>項目</th><th>金額</th><th>付款人</th><th>分帳對象</th></tr></thead>
-        <tbody></tbody>
-      </table>
+          <button class="btn primary full">新增成員</button>
+        </form>
+      </div>
 
-      <h3>結算結果</h3>
-      <ul id="settlement-list" class="settlement"></ul>
+      <div class="card">
+        <h2>成員列表</h2>
+        <table class="table" id="member-table">
+          <thead>
+            <tr>
+              <th>#</th><th>姓名</th><th>顏色</th><th>電話</th><th>備註</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <p id="total-members">總人數：0 人</p>
+      </div>
+
     </section>
 
     <!-- ========================================================= -->
-    <!-- 匯入匯出 -->
+    <!-- 頁面 3：記帳 Expenses -->
     <!-- ========================================================= -->
-    <section class="card">
-      <h2>資料管理</h2>
+    <section id="page-expenses" class="page">
 
-      <button id="export-json" class="btn small">匯出 JSON（備份）</button>
+      <h1 class="page-title">記帳（AA 分帳）</h1>
 
-      <label class="btn small secondary">
-        匯入 JSON
-        <input type="file" id="import-json" accept="application/json" hidden>
-      </label>
+      <div class="card">
+        <form id="expense-form" class="form-grid">
 
-      <button id="clear-data" class="btn small danger">清空所有資料</button>
+          <label>
+            消費名稱
+            <input id="exp-name" required>
+          </label>
+
+          <label>
+            金額
+            <input id="exp-amount" type="number" required>
+          </label>
+
+          <label>
+            付款人
+            <select id="exp-payer"></select>
+          </label>
+
+          <label class="full">
+            分帳成員
+            <div id="exp-members" class="checkbox-container"></div>
+          </label>
+
+          <button class="btn primary">加入記帳</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>記帳紀錄</h2>
+        <table class="table" id="expense-table">
+          <thead><tr><th>項目</th><th>金額</th><th>付款人</th><th>分帳對象</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>結算結果</h2>
+        <ul id="settlement-list" class="settlement"></ul>
+      </div>
+
     </section>
 
   </main>
 
-  <footer class="footer">
-    <small>家族旅遊工具 · 純前端 · 支援離線（PWA）</small>
-  </footer>
-
   <script src="app.js"></script>
 
-  <!-- PWA -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
-    }
-  </script>
 </body>
 </html>

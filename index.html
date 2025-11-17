@@ -3,204 +3,205 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trip Planner v4 · Split-Pane Layout</title>
+  <title>Trip Planner v4.2 · Split Layout</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#4f46e5">
-  <link rel="icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="icon" href="icons/icon-192.png" />
 
   <!-- UI -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-<div class="app">
-
-  <!-- HEADER -->
-  <header class="app-header">
-    <div class="app-title">
-      <span class="emoji">🌏</span>
-      <div>
-        <h1>Trip Planner v4</h1>
-        <p>多人行程 · 記帳分攤 · 離線 PWA</p>
+  <div class="app">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="app-title">
+        <span class="emoji">🌏</span>
+        <div>
+          <h1>Trip Planner</h1>
+          <p>多人行程 · 共同記帳 · 自動分帳 · 離線 PWA</p>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- ================= MAIN LAYOUT ================= -->
-  <main class="layout-v4">
+    <!-- MAIN LAYOUT: 左欄(上下) + 右欄 -->
+    <main class="layout">
+      <!-- 左欄：成員 + Splitter + 記帳 -->
+      <div class="left-column" id="left-column">
+        <!-- 左上：成員管理 -->
+        <section class="panel panel-members" id="members-panel">
+          <h2 class="panel-title">成員管理</h2>
 
-    <!-- ========== LEFT COLUMN (TOP + SPLITTER + BOTTOM) ========== -->
-    <div class="left-pane">
+          <div class="card">
+            <h3 class="card-title">新增成員</h3>
+            <form id="member-form" class="form-grid">
+              <div class="form-field">
+                <label for="member-name">姓名</label>
+                <input id="member-name" type="text" required />
+              </div>
+              <div class="form-field">
+                <label for="member-short">縮寫</label>
+                <input id="member-short" type="text" maxlength="2" required />
+              </div>
+              <div class="form-field">
+                <label for="member-color">顏色（莫蘭迪）</label>
+                <select id="member-color">
+                  <option value="">自動指派</option>
+                </select>
+              </div>
+              <div class="form-field form-field-full">
+                <label for="member-note">備註</label>
+                <input id="member-note" type="text" />
+              </div>
+              <div class="form-actions form-field-full">
+                <button type="submit" class="btn primary">新增成員</button>
+              </div>
+            </form>
+          </div>
 
-      <!-- TOP: MEMBERS -->
-      <section class="left-top panel" id="members-panel">
-        <h2 class="panel-title">成員管理</h2>
+          <div class="card">
+            <h3 class="card-title">成員列表</h3>
+            <div id="member-list" class="member-list empty-hint"></div>
+          </div>
+        </section>
+
+        <!-- 中間 Splitter -->
+        <div class="splitter" id="splitter"></div>
+
+        <!-- 左下：記帳 + 結算 -->
+        <section class="panel panel-expenses" id="expenses-panel">
+          <h2 class="panel-title">記帳與結算</h2>
+
+          <!-- 匯率設定 -->
+          <div class="card">
+            <h3 class="card-title">匯率設定（主幣：TWD）</h3>
+            <div class="form-grid small">
+              <div class="form-field">
+                <label for="rate-jpy">1 JPY = ? TWD</label>
+                <input id="rate-jpy" type="number" min="0" step="0.0001" />
+              </div>
+              <div class="form-field">
+                <label for="rate-krw">1 KRW = ? TWD</label>
+                <input id="rate-krw" type="number" min="0" step="0.0001" />
+              </div>
+              <div class="form-actions form-field-full">
+                <button id="save-rates" type="button" class="btn secondary">更新匯率</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 新增記帳 -->
+          <div class="card">
+            <h3 class="card-title">新增記帳</h3>
+            <form id="expense-form" class="form-grid">
+              <div class="form-field">
+                <label for="expense-date">日期</label>
+                <input id="expense-date" type="date" />
+              </div>
+              <div class="form-field">
+                <label for="expense-amount">金額</label>
+                <input id="expense-amount" type="number" min="0" step="0.01" required />
+              </div>
+              <div class="form-field">
+                <label for="expense-currency">幣別</label>
+                <select id="expense-currency">
+                  <option value="TWD">TWD</option>
+                  <option value="JPY">JPY</option>
+                  <option value="KRW">KRW</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="expense-rate">匯率（可覆寫）</label>
+                <input id="expense-rate" type="number" min="0" step="0.0001" required />
+              </div>
+              <div class="form-field">
+                <label for="expense-title">項目名稱</label>
+                <input id="expense-title" type="text" required />
+              </div>
+              <div class="form-field">
+                <label for="expense-payer">付款人</label>
+                <select id="expense-payer">
+                  <option value="">共同付款</option>
+                </select>
+              </div>
+              <div class="form-field form-field-full">
+                <label>分攤成員</label>
+                <div id="expense-members" class="chip-group"></div>
+              </div>
+              <div class="form-actions form-field-full">
+                <button type="submit" class="btn primary">新增記帳</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- 記帳列表 -->
+          <div class="card">
+            <h3 class="card-title">記帳列表</h3>
+            <div id="expense-list" class="expense-list empty-hint"></div>
+          </div>
+
+          <!-- 結餘 -->
+          <div class="card">
+            <h3 class="card-title">個人結餘</h3>
+            <ul id="balance-summary" class="balance-list empty-hint"></ul>
+          </div>
+
+          <!-- Pairwise -->
+          <div class="card">
+            <h3 class="card-title">兩兩結算</h3>
+            <ul id="pairwise-list" class="pairwise-list empty-hint"></ul>
+          </div>
+        </section>
+      </div>
+
+      <!-- 右欄：行程 -->
+      <section class="panel panel-schedule" id="schedule-panel">
+        <h2 class="panel-title">行程（右側整欄）</h2>
 
         <div class="card">
-          <h3 class="card-title">新增成員</h3>
-          <form id="member-form" class="form-grid">
+          <h3 class="card-title">新增行程</h3>
+          <form id="schedule-form" class="form-grid">
             <div class="form-field">
-              <label>姓名</label>
-              <input id="member-name" required>
+              <label for="schedule-date">日期</label>
+              <input id="schedule-date" type="date" required />
             </div>
             <div class="form-field">
-              <label>縮寫</label>
-              <input id="member-short" maxlength="2" required>
+              <label for="schedule-time">時間</label>
+              <input id="schedule-time" type="time" />
             </div>
             <div class="form-field">
-              <label>顏色</label>
-              <select id="member-color"><option value="">Auto</option></select>
+              <label for="schedule-title">名稱</label>
+              <input id="schedule-title" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="schedule-location">地點 / 備註</label>
+              <input id="schedule-location" type="text" />
             </div>
             <div class="form-field form-field-full">
-              <label>備註</label>
-              <input id="member-note">
+              <label>參與成員</label>
+              <div id="schedule-members" class="chip-group"></div>
             </div>
             <div class="form-actions form-field-full">
-              <button class="btn primary">新增成員</button>
+              <button type="submit" class="btn primary">新增行程</button>
             </div>
           </form>
         </div>
 
         <div class="card">
-          <h3 class="card-title">成員列表</h3>
-          <div id="member-list" class="member-list empty-hint"></div>
+          <h3 class="card-title">行程列表</h3>
+          <div id="schedule-list" class="schedule-list empty-hint"></div>
         </div>
       </section>
+    </main>
+  </div>
 
-      <!-- SPLITTER -->
-      <div class="splitter" id="splitter"></div>
-
-      <!-- BOTTOM: EXPENSES -->
-      <section class="left-bottom panel" id="expenses-panel">
-        <h2 class="panel-title">記帳</h2>
-
-        <div class="card">
-          <h3 class="card-title">匯率設定</h3>
-          <div class="form-grid small">
-            <div class="form-field">
-              <label>JPY → TWD</label>
-              <input id="rate-jpy" type="number" step="0.0001" />
-            </div>
-            <div class="form-field">
-              <label>KRW → TWD</label>
-              <input id="rate-krw" type="number" step="0.0001" />
-            </div>
-            <div class="form-actions form-field-full">
-              <button id="save-rates" type="button" class="btn secondary">更新匯率</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">新增記帳</h3>
-          <form id="expense-form" class="form-grid">
-            <div class="form-field">
-              <label>日期</label>
-              <input id="expense-date" type="date">
-            </div>
-            <div class="form-field">
-              <label>金額</label>
-              <input id="expense-amount" type="number" required>
-            </div>
-            <div class="form-field">
-              <label>幣別</label>
-              <select id="expense-currency">
-                <option value="TWD">TWD</option>
-                <option value="JPY">JPY</option>
-                <option value="KRW">KRW</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>匯率</label>
-              <input id="expense-rate" type="number" step="0.0001" required>
-            </div>
-            <div class="form-field">
-              <label>項目</label>
-              <input id="expense-title" required>
-            </div>
-            <div class="form-field">
-              <label>付款人</label>
-              <select id="expense-payer"></select>
-            </div>
-            <div class="form-field form-field-full">
-              <label>分攤成員</label>
-              <div id="expense-members" class="chip-group"></div>
-            </div>
-            <div class="form-actions form-field-full">
-              <button class="btn primary">新增記帳</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">記帳列表</h3>
-          <div id="expense-list" class="expense-list empty-hint"></div>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">個人結餘</h3>
-          <ul id="balance-summary" class="balance-list empty-hint"></ul>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">兩兩結算</h3>
-          <ul id="pairwise-list" class="pairwise-list empty-hint"></ul>
-        </div>
-
-      </section>
-    </div>
-
-    <!-- ========== RIGHT COLUMN (FULL SCHEDULE) ========== -->
-    <section class="right-pane panel" id="schedule-panel">
-      <h2 class="panel-title">行程（右側全高）</h2>
-
-      <div class="card">
-        <h3 class="card-title">新增行程</h3>
-        <form id="schedule-form" class="form-grid">
-          <div class="form-field">
-            <label>日期</label>
-            <input id="schedule-date" type="date" required>
-          </div>
-          <div class="form-field">
-            <label>時間</label>
-            <input id="schedule-time" type="time">
-          </div>
-          <div class="form-field">
-            <label>名稱</label>
-            <input id="schedule-title" required>
-          </div>
-          <div class="form-field">
-            <label>地點</label>
-            <input id="schedule-location">
-          </div>
-          <div class="form-field form-field-full">
-            <label>參與成員</label>
-            <div id="schedule-members" class="chip-group"></div>
-          </div>
-          <div class="form-actions form-field-full">
-            <button class="btn primary">新增行程</button>
-          </div>
-        </form>
-      </div>
-
-      <div class="card">
-        <h3 class="card-title">行程列表</h3>
-        <div id="schedule-list" class="schedule-list empty-hint"></div>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script src="app.js"></script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js");
-}
-</script>
-
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+    }
+  </script>
 </body>
 </html>

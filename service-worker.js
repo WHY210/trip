@@ -1,4 +1,4 @@
-const CACHE_NAME = "trip-planner-v4-cache-v1";
+const CACHE_NAME = "trip-planner-v42-cache-v1";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -10,15 +10,15 @@ const FILES_TO_CACHE = [
   "./icons/icon-512-maskable.png"
 ];
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(FILES_TO_CACHE)));
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE)));
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+      Promise.all(keys.map((key) => (key !== CACHE_NAME ? caches.delete(key) : null)))
     )
   );
   self.clients.claim();
@@ -27,14 +27,13 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((res) => {
-          caches.open(CACHE_NAME).then((c) => c.put(event.request, res.clone()));
-          return res;
+      const fetchPromise = fetch(event.request)
+        .then((response) => {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+          return response;
         })
         .catch(() => cached);
-
-      return cached || network;
+      return cached || fetchPromise;
     })
   );
 });

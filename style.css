@@ -1,6 +1,4 @@
-/* =====================
-   GLOBAL VARIABLES
-===================== */
+/* ========== 全域變數 ========== */
 :root {
     --bg: #f3f4f6;
     --bg-alt: #ffffff;
@@ -8,45 +6,49 @@
     --text: #111827;
     --text-subtle: #6b7280;
     --primary: #4f46e5;
-    --primary-soft: #e0e7ff;
     --danger: #dc2626;
   
     --radius-card: 12px;
-    --shadow-card: 0 8px 18px rgba(0, 0, 0, 0.06);
+    --shadow-card: 0 8px 18px rgba(15, 23, 42, 0.08);
   }
   
-  /* RESET */
-  
+  /* Reset */
   *,
   *::before,
   *::after {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
   }
   
-  html, body {
+  html,
+  body {
     margin: 0;
     padding: 0;
-    background: var(--bg);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
-    color: var(--text);
     height: 100%;
+    overflow: hidden; /* ⭐ 整個頁面不滾動 */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
+    background: var(--bg);
+    color: var(--text);
+  }
+  
+  /* App 外框：header + main */
+  .app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   
   /* HEADER */
-  
   .app-header {
-    background: #fff;
-    border-bottom: 1px solid var(--border);
+    flex: 0 0 auto;
     padding: 10px 16px;
-    display: flex;
-    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
   }
   
   .app-title {
     display: flex;
-    gap: 10px;
     align-items: center;
+    gap: 10px;
   }
   
   .app-title h1 {
@@ -55,134 +57,139 @@
   }
   
   .app-title p {
-    margin: 0;
+    margin: 2px 0 0;
     font-size: 12px;
     color: var(--text-subtle);
   }
   
-  /* =====================
-     MAIN LAYOUT v4
-  ===================== */
-  
-  .layout-v4 {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    height: calc(100vh - 56px);
-    overflow: hidden;
+  .app-title .emoji {
+    font-size: 22px;
   }
   
-  /* LEFT PANE (split vertically) */
-  
-  .left-pane {
+  /* MAIN LAYOUT: 左 + 右 */
+  .layout {
+    flex: 1 1 auto;
     display: grid;
-    grid-template-rows: var(--left-top-height, 50%) 6px 1fr;
+    grid-template-columns: 360px 1fr; /* 左固定、右自適應 */
+    height: calc(100% - 0px);
+    overflow: hidden; /* ⭐ 主區塊本身不滾動 */
+  }
+  
+  /* 左欄：上下 split-pane */
+  .left-column {
+    display: grid;
+    grid-template-rows: 50% 6px 1fr; /* 初始：上 50% / Splitter / 下 50% */
     border-right: 1px solid var(--border);
-    height: 100%;
+    overflow: hidden; /* ⭐ 避免內容撐出 */
   }
   
-  .left-top,
-  .left-bottom {
-    overflow-y: auto;
+  /* 左上／左下 panel 都自己滾動 */
+  .panel-members,
+  .panel-expenses {
     padding: 10px;
+    overflow-y: auto; /* ⭐ 各自滾動 */
   }
   
-  /* Splitter Bar */
+  /* 右欄 panel 也自己滾動 */
+  .panel-schedule {
+    padding: 10px 16px;
+    overflow-y: auto; /* ⭐ 右側自己滾動 */
+  }
   
+  /* Splitter */
   .splitter {
     height: 6px;
     background: var(--border);
     cursor: row-resize;
   }
   
-  /* RIGHT PANE */
-  
-  .right-pane {
-    overflow-y: auto;
-    padding: 10px 16px 16px 16px;
-  }
-  
-  /* =====================
-     PANEL / CARDS
-  ===================== */
-  
+  /* Panel 標題 */
   .panel-title {
-    margin: 4px 0 10px;
+    margin: 4px 0 8px;
     font-size: 15px;
     font-weight: 600;
   }
   
+  /* 卡片 */
   .card {
     background: var(--bg-alt);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
-    padding: 12px;
-    margin-bottom: 12px;
+    padding: 10px 12px 12px;
+    margin-bottom: 10px;
   }
   
   .card-title {
-    margin: 0 0 8px 0;
+    margin: 0 0 6px;
     font-size: 14px;
     font-weight: 600;
   }
   
-  /* =====================
-     FORM
-  ===================== */
-  
+  /* 表單 Grid */
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
   }
   
   .form-grid.small {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   
   .form-field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
   
   .form-field-full {
     grid-column: 1 / -1;
   }
   
+  label {
+    font-size: 12px;
+    color: var(--text-subtle);
+  }
+  
   input,
   select {
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid var(--border);
     background: #f9fafb;
     font-size: 13px;
+    outline: none;
   }
   
   input:focus,
   select:focus {
-    outline: none;
     border-color: var(--primary);
     background: #ffffff;
   }
   
-  /* BUTTONS */
+  /* 按鈕 */
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
   
   .btn {
-    padding: 6px 12px;
     border-radius: 999px;
     border: none;
     cursor: pointer;
+    padding: 6px 12px;
     font-size: 13px;
   }
   
   .btn.primary {
     background: var(--primary);
-    color: #fff;
+    color: #ffffff;
   }
   
   .btn.secondary {
     background: #e5e7eb;
-    color: #111;
+    color: #111827;
   }
   
   .btn.danger {
@@ -190,54 +197,7 @@
     color: var(--danger);
   }
   
-  /* =====================
-     MEMBER LIST
-  ===================== */
-  
-  .member-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-  
-  .member-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f9fafb;
-    padding: 6px 8px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  
-  .member-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    font-size: 11px;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .member-info {
-    display: flex;
-    flex-direction: column;
-    margin-left: 8px;
-  }
-  
-  .member-meta {
-    font-size: 11px;
-    color: var(--text-subtle);
-  }
-  
-  /* =====================
-     CHIP GROUP
-  ===================== */
-  
+  /* Chips (成員勾選) */
   .chip-group {
     display: flex;
     flex-wrap: wrap;
@@ -245,18 +205,30 @@
   }
   
   .chip {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
     border-radius: 999px;
     border: 1px solid var(--border);
-    padding: 4px 8px;
-    background: #fff;
+    background: #ffffff;
     cursor: pointer;
-    gap: 6px;
+    font-size: 12px;
   }
   
   .chip input {
     margin: 0;
+  }
+  
+  .member-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #ffffff;
   }
   
   .member-dot.small {
@@ -265,25 +237,54 @@
     font-size: 10px;
   }
   
-  /* =====================
-     EXPENSE LIST
-  ===================== */
+  /* 成員列表 */
+  .member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
   
+  .member-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+  }
+  
+  .member-info {
+    margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .member-meta {
+    font-size: 11px;
+    color: var(--text-subtle);
+  }
+  
+  /* 記帳列表 */
   .expense-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-height: 260px;
-    overflow-y: auto;
   }
   
   .expense-row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 6px 8px;
-    background: #f9fafb;
-    border: 1px solid var(--border);
     border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #f9fafb;
+  }
+  
+  .expense-main {
+    font-size: 13px;
   }
   
   .expense-meta {
@@ -291,10 +292,7 @@
     color: var(--text-subtle);
   }
   
-  /* =====================
-     BALANCE / PAIRWISE
-  ===================== */
-  
+  /* Balance / Pairwise */
   .balance-list,
   .pairwise-list {
     list-style: none;
@@ -302,28 +300,29 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
   
   .balance-item,
   .pairwise-item {
-    background: #f9fafb;
-    border: 1px solid var(--border);
-    padding: 6px 8px;
+    padding: 5px 8px;
     border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #f9fafb;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
   }
   
   .balance-amount.positive {
     color: #16a34a;
   }
+  
   .balance-amount.negative {
     color: #dc2626;
   }
   
-  /* =====================
-     SCHEDULE LIST
-  ===================== */
-  
+  /* 行程列表 */
   .schedule-list {
     display: flex;
     flex-direction: column;
@@ -331,14 +330,15 @@
   }
   
   .schedule-date-group {
-    border: 1px solid var(--border);
     border-radius: 8px;
+    border: 1px solid var(--border);
     overflow: hidden;
   }
   
   .schedule-date-header {
     padding: 6px 10px;
     background: #eef2ff;
+    font-size: 13px;
     display: flex;
     justify-content: space-between;
     cursor: pointer;
@@ -352,10 +352,10 @@
   }
   
   .schedule-item {
-    background: #fff;
     padding: 6px 8px;
     border-radius: 6px;
     border: 1px solid var(--border);
+    background: #ffffff;
     display: flex;
     justify-content: space-between;
     cursor: grab;
@@ -366,16 +366,42 @@
   }
   
   .schedule-item.drag-over {
-    box-shadow: 0 0 0 2px var(--primary-soft);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
   }
   
-  /* =====================
-     EMPTY
-  ===================== */
-  
+  /* 無資料提示 */
   .empty-hint:empty::before {
     content: "尚無資料…";
-    color: var(--text-subtle);
     font-size: 12px;
+    color: var(--text-subtle);
+  }
+  
+  /* 簡單手機版處理：寬度太小就改為上下堆疊 + 允許整頁滾動 */
+  @media (max-width: 820px) {
+    html,
+    body {
+      overflow: auto;
+    }
+  
+    .layout {
+      display: block;
+      height: auto;
+    }
+  
+    .left-column {
+      grid-template-rows: auto;
+    }
+  
+    .panel-members,
+    .panel-expenses,
+    .panel-schedule {
+      height: auto;
+      max-height: none;
+      overflow: visible;
+    }
+  
+    .splitter {
+      display: none;
+    }
   }
   

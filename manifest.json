@@ -1,14 +1,11 @@
 {
-    "name": "Trip Planner v3",
+    "name": "Trip Planner v4",
     "short_name": "TripPlanner",
-    "description": "多人旅行行程管理＋共同記帳＋自動分帳的離線 PWA",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
-    "background_color": "#f3f4f6",
     "theme_color": "#4f46e5",
-    "orientation": "portrait-primary",
-  
+    "background_color": "#f3f4f6",
     "icons": [
       {
         "src": "icons/icon.png",

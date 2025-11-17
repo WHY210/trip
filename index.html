@@ -20,12 +20,12 @@
 <body>
   <header class="topbar">
     <h1>家族旅遊登記暨行程通知</h1>
-    <p class="subtitle">家族旅遊資訊集中管理、報名登記、行程公告，一個網站搞定</p>
+    <p class="subtitle">家族旅遊資訊集中管理、報名登記、行程公告、記帳，一個網站搞定</p>
   </header>
 
   <main class="container">
 
-    <!-- 行程設定 -->
+    <!-- 行程基本資訊 -->
     <section class="card">
       <h2>行程資訊設定（管理人用）</h2>
       <form id="trip-form" class="form-grid">
@@ -47,28 +47,30 @@
       <div class="info-box" id="trip-display"></div>
     </section>
 
-    <!-- 報名 -->
+    <!-- 家族成員報名 -->
     <section class="card">
       <h2>家族成員報名</h2>
       <p class="hint">👉 把這個網站網址丟到家族群組，每個人可以自己填寫報名資料。</p>
 
       <form id="member-form" class="form-grid">
         <label>姓名
-          <input type="text" id="member-name" required>
+          <input type="text" id="member-name" placeholder="你的名字" required>
         </label>
         <label>人數
           <input type="number" id="member-count" min="1" value="1">
         </label>
         <label>連絡電話
-          <input type="tel" id="member-phone">
+          <input type="tel" id="member-phone" placeholder="手機或市話">
         </label>
         <label>飲食／住宿需求
-          <input type="text" id="member-diet">
+          <input type="text" id="member-diet" placeholder="吃素、不吃牛、需要嬰兒床等">
+        </label>
+        <label>顏色（代表你的小圓點）
+          <input type="color" id="member-color" value="#f97316">
         </label>
         <label class="full">備註
-          <textarea id="member-note" rows="2"></textarea>
+          <textarea id="member-note" rows="2" placeholder="其他想跟主揪說的"></textarea>
         </label>
-
         <button type="submit" class="btn primary">送出報名</button>
       </form>
     </section>
@@ -80,7 +82,7 @@
       <div class="list-header">
         <span id="total-members">總人數：0 人</span>
         <div class="list-actions">
-          <button class="btn small" id="export-json">匯出 JSON</button>
+          <button class="btn small" id="export-json">匯出 JSON（給 GitHub 備份）</button>
 
           <label class="btn small secondary">匯入 JSON
             <input type="file" id="import-json" accept="application/json" hidden>
@@ -93,14 +95,55 @@
       <table class="table" id="member-table">
         <thead>
           <tr>
-            <th>#</th><th>姓名</th><th>人數</th><th>電話</th><th>需求</th><th>備註</th><th>操作</th>
+            <th>#</th>
+            <th>姓名</th>
+            <th>人數</th>
+            <th>顏色</th>
+            <th>電話</th>
+            <th>需求</th>
+            <th>備註</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </section>
 
-    <!-- 記帳區：正確位置放這裡 -->
+    <!-- 多日行程區 -->
+    <section class="card">
+      <h2>行程規劃（多日）</h2>
+      <p class="hint">
+        主揪可以新增多天行程（Day 1、Day 2…），再為每一天加入活動。<br>
+        底下清單的彩色小圓點代表每個家人，點一下即可勾選是否參加該活動。
+      </p>
+
+      <form id="activity-form" class="form-grid">
+        <label>天數
+          <select id="activity-day"></select>
+        </label>
+        <label>時間
+          <input type="time" id="activity-time">
+        </label>
+        <label>行程名稱
+          <input type="text" id="activity-title" placeholder="例如：早餐、海邊散步" required>
+        </label>
+        <label>地點
+          <input type="text" id="activity-location" placeholder="例如：某某咖啡廳">
+        </label>
+        <label class="full">連結（例如 Google 地圖）
+          <input type="url" id="activity-link" placeholder="https://maps.google.com/...">
+        </label>
+
+        <button type="submit" class="btn primary">加入行程</button>
+        <button type="button" class="btn secondary small" id="add-day-btn">新增一天（Day）</button>
+      </form>
+
+      <div id="days-container" class="days-container">
+        <!-- JS 會產生 Day 1 / Day 2 手風琴式行程表 -->
+      </div>
+    </section>
+
+    <!-- 記帳區 -->
     <section class="card">
       <h2>記帳（AA 自動分帳）</h2>
 
@@ -126,7 +169,14 @@
 
       <h3>記帳紀錄</h3>
       <table class="table" id="expense-table">
-        <thead><tr><th>項目</th><th>金額</th><th>付款人</th><th>分帳對象</th></tr></thead>
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>金額</th>
+            <th>付款人</th>
+            <th>分帳對象</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
 
@@ -138,25 +188,33 @@
     <section class="card">
       <h2>分享 / 當成 App 使用</h2>
       <ol class="hint-list">
-        <li>把這個網站網址貼到 LINE 家族群組。</li>
-        <li>手機瀏覽器 → 加到主畫面即可當 App。</li>
+        <li>把這個網站網址貼到 LINE 家族群組，請大家自己登記。</li>
+        <li>
+          在手機瀏覽器開啟此頁面：
+          <ul>
+            <li><strong>iPhone Safari：</strong>點分享 → 加到主畫面。</li>
+            <li><strong>Android Chrome：</strong>右上角選單 → 安裝 App / 加到主畫面。</li>
+          </ul>
+        </li>
+        <li>之後就可以像 App 一樣，直接點主畫面圖示打開。</li>
       </ol>
     </section>
 
   </main>
 
   <footer class="footer">
-    <small>家族旅遊小工具 · 純前端 · GitHub Pages</small>
+    <small>家族旅遊小工具 · 純前端 · GitHub Pages · 線條狐狸版</small>
   </footer>
 
   <script src="app.js"></script>
   <script>
+    // 註冊 Service Worker（讓網站可以像 App 一樣、支援離線）
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js');
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(err => console.error('Service worker registration failed', err));
       });
     }
   </script>
-
 </body>
 </html>

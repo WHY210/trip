@@ -28,7 +28,7 @@
   }
   
   .container {
-    max-width: 960px;
+    max-width: 1000px;
     margin: 1rem auto 3rem;
     padding: 0 1rem;
   }
@@ -67,16 +67,22 @@
   input[type="text"],
   input[type="tel"],
   input[type="number"],
-  textarea {
+  input[type="time"],
+  input[type="url"],
+  input[type="color"],
+  textarea,
+  select {
     padding: 0.5rem 0.6rem;
     border-radius: 0.5rem;
     border: 1px solid #d1d5db;
     font-size: 0.9rem;
     outline: none;
+    background: white;
   }
   
   input:focus,
-  textarea:focus {
+  textarea:focus,
+  select:focus {
     border-color: #2563eb;
     box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
   }
@@ -188,15 +194,7 @@
     color: #6b7280;
   }
   
-  @media (max-width: 600px) {
-    .card {
-      padding: 0.85rem 0.9rem;
-    }
-  
-    .topbar h1 {
-      font-size: 1.3rem;
-    }
-  }
+  /* 記帳區 checkbox */
   .checkbox-container {
     display: flex;
     flex-wrap: wrap;
@@ -215,5 +213,115 @@
     padding-left: 1rem;
     font-size: 0.9rem;
     color: #374151;
+  }
+  
+  /* 成員顏色圓點 */
+  .member-color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    display: inline-block;
+    border: 1px solid #9ca3af;
+  }
+  
+  /* 多日行程區 */
+  .days-container {
+    margin-top: 0.75rem;
+  }
+  
+  .day-block {
+    border-radius: 0.6rem;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .day-header {
+    background: #f9fafb;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+  }
+  
+  .day-header span {
+    font-weight: 600;
+  }
+  
+  .day-header small {
+    color: #6b7280;
+  }
+  
+  .day-body {
+    padding: 0.4rem 0.75rem 0.6rem;
+    display: none;
+  }
+  
+  .day-block.open .day-body {
+    display: block;
+  }
+  
+  .activity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  
+  .activity-table th,
+  .activity-table td {
+    padding: 0.3rem 0.35rem;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+  }
+  
+  .activity-table th {
+    background: #f3f4f6;
+  }
+  
+  .activity-link {
+    font-size: 0.8rem;
+    color: #2563eb;
+    text-decoration: none;
+  }
+  
+  .activity-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* 行程成員小圓點列 */
+  .member-dots {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+  
+  .member-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  
+  .member-dot.inactive {
+    background: transparent !important;
+    opacity: 0.4;
+  }
+  
+  .member-dot.inactive {
+    /* 邊框顏色會在 JS 裡用 inline style 設定 */
+  }
+  
+  @media (max-width: 600px) {
+    .card {
+      padding: 0.85rem 0.9rem;
+    }
+  
+    .topbar h1 {
+      font-size: 1.3rem;
+    }
   }
   

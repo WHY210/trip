@@ -1,62 +1,30 @@
-// Trip Planner v3 - Pure Frontend, localStorage only
+/* ======================================================
+   Trip Planner v4 - Full Application Logic (Pure JS)
+   - Members
+   - Expenses
+   - Schedule
+   - Settlement
+   - Split Pane (Left-Top / Left-Bottom)
+   - LocalStorage State
+====================================================== */
 
-const STORAGE_KEY = "tripPlannerV3State_v3";
+const STORAGE_KEY = "trip_planner_v4_state";
 
-// 莫蘭迪色盤
-const MORANDI_COLORS = [
-  { id: "fog-blue", name: "Fog Blue", hex: "#9AA7B1" },
-  { id: "mist-green", name: "Mist Green", hex: "#A8B5A2" },
-  { id: "soft-sand", name: "Soft Sand", hex: "#DACFC4" },
-  { id: "dusty-rose", name: "Dusty Rose", hex: "#C7A0A7" },
-  { id: "cloud-gray", name: "Cloud Gray", hex: "#C7CED5" },
-  { id: "sage", name: "Sage", hex: "#B9C4A7" },
-  { id: "haze-lavender", name: "Haze Lavender", hex: "#C7BEDD" },
-  { id: "warm-taupe", name: "Warm Taupe", hex: "#B8A19A" },
-  { id: "pale-mint", name: "Pale Mint", hex: "#C8D9C2" },
-  { id: "smoke-blue", name: "Smoke Blue", hex: "#8FA2B5" }
-];
-
-// ===== STATE =====
-
+/* -----------------------
+   Load / Save STATE
+----------------------- */
 let state = loadState();
-
-// 折疊狀態只放在記憶體
-const collapsedDates = new Set();
-
-// 拖曳用
-let draggingScheduleId = null;
-
-// Layout 判斷（桌機 vs 手機）
-let isMobileLayout = window.innerWidth <= 900;
-
-// ===== UTIL =====
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      // 填補缺欄位（避免版本升級爆炸）
-      return {
-        members: parsed.members || [],
-        schedules: parsed.schedules || [],
-        expenses: parsed.expenses || [],
-        settings: {
-          baseCurrency: parsed.settings?.baseCurrency || "TWD",
-          rateJPY: typeof parsed.settings?.rateJPY === "number" ? parsed.settings.rateJPY : 0.22,
-          rateKRW: typeof parsed.settings?.rateKRW === "number" ? parsed.settings.rateKRW : 0.024
-        }
-      };
-    }
-  } catch (err) {
-    console.error("Failed to load state:", err);
-  }
+    if (raw) return JSON.parse(raw);
+  } catch {}
   return {
     members: [],
     schedules: [],
     expenses: [],
     settings: {
-      baseCurrency: "TWD",
       rateJPY: 0.22,
       rateKRW: 0.024
     }
@@ -64,58 +32,43 @@ function loadState() {
 }
 
 function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (err) {
-    console.error("Failed to save state:", err);
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/* -----------------------
+   Utility
+----------------------- */
 function genId(prefix) {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  return prefix + "_" + Math.random().toString(36).slice(2, 10);
 }
 
 function findMember(id) {
-  return state.members.find((m) => m.id === id) || null;
+  return state.members.find((m) => m.id === id);
 }
 
-function formatDateLabel(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr + "T00:00:00");
-  if (Number.isNaN(date.getTime())) return dateStr;
-  const weekday = ["日", "一", "二", "三", "四", "五", "六"][date.getDay()];
-  return `${dateStr}（${weekday}）`;
+function dateLabel(d) {
+  if (!d) return "";
+  const dt = new Date(d + "T00:00:00");
+  const w = "日一二三四五六".charAt(dt.getDay());
+  return `${d}（${w}）`;
 }
 
-function formatCurrency(amount, currency = "TWD") {
-  if (typeof amount !== "number" || Number.isNaN(amount)) return "-";
-  const fixed = amount.toFixed(0);
-  return `${fixed} ${currency}`;
-}
-
-function formatTwd(amount) {
-  if (typeof amount !== "number" || Number.isNaN(amount)) return "-";
-  return `${amount.toFixed(0)} TWD`;
-}
-
-function sortByDateAsc(a, b) {
-  if (a.date === b.date) return 0;
-  return a.date < b.date ? -1 : 1;
-}
-
-// ===== DOM REFERENCES =====
+/* -----------------------
+   DOM Elements
+----------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
   cacheDom();
   initForms();
-  initTabs();
-  initResponsive();
+  initSplitter();
   renderAll();
 });
 
+/* --- Cache DOM --- */
 const dom = {};
 
 function cacheDom() {
+  // members
   dom.memberForm = document.getElementById("member-form");
   dom.memberName = document.getElementById("member-name");
   dom.memberShort = document.getElementById("member-short");
@@ -123,13 +76,10 @@ function cacheDom() {
   dom.memberNote = document.getElementById("member-note");
   dom.memberList = document.getElementById("member-list");
 
-  dom.scheduleForm = document.getElementById("schedule-form");
-  dom.scheduleDate = document.getElementById("schedule-date");
-  dom.scheduleTime = document.getElementById("schedule-time");
-  dom.scheduleTitle = document.getElementById("schedule-title");
-  dom.scheduleLocation = document.getElementById("schedule-location");
-  dom.scheduleMembers = document.getElementById("schedule-members");
-  dom.scheduleList = document.getElementById("schedule-list");
+  // expenses
+  dom.rateJPY = document.getElementById("rate-jpy");
+  dom.rateKRW = document.getElementById("rate-krw");
+  dom.saveRates = document.getElementById("save-rates");
 
   dom.expenseForm = document.getElementById("expense-form");
   dom.expenseDate = document.getElementById("expense-date");
@@ -140,779 +90,527 @@ function cacheDom() {
   dom.expensePayer = document.getElementById("expense-payer");
   dom.expenseMembers = document.getElementById("expense-members");
   dom.expenseList = document.getElementById("expense-list");
-
   dom.balanceSummary = document.getElementById("balance-summary");
   dom.pairwiseList = document.getElementById("pairwise-list");
 
-  dom.baseCurrency = document.getElementById("base-currency");
-  dom.rateJPY = document.getElementById("rate-jpy");
-  dom.rateKRW = document.getElementById("rate-krw");
-  dom.saveRates = document.getElementById("save-rates");
+  // schedule
+  dom.scheduleForm = document.getElementById("schedule-form");
+  dom.scheduleDate = document.getElementById("schedule-date");
+  dom.scheduleTime = document.getElementById("schedule-time");
+  dom.scheduleTitle = document.getElementById("schedule-title");
+  dom.scheduleLocation = document.getElementById("schedule-location");
+  dom.scheduleMembers = document.getElementById("schedule-members");
+  dom.scheduleList = document.getElementById("schedule-list");
 
-  dom.layout = document.getElementById("layout");
-  dom.panels = {
-    members: document.getElementById("members-panel"),
-    schedule: document.getElementById("schedule-panel"),
-    expenses: document.getElementById("expenses-panel")
-  };
-  dom.bottomTabs = document.getElementById("bottom-tabs");
+  // splitter
+  dom.splitter = document.getElementById("splitter");
+  dom.leftPane = document.querySelector(".left-pane");
 }
 
-// ===== INIT FORMS =====
+/* -----------------------
+   INIT Forms
+----------------------- */
 
 function initForms() {
-  // 填入莫蘭迪顏色選單
-  MORANDI_COLORS.forEach((c) => {
-    const opt = document.createElement("option");
-    opt.value = c.id;
-    opt.textContent = `${c.name} (${c.hex})`;
-    dom.memberColor.appendChild(opt);
-  });
-
-  // 成員表單
+  /* --- Member Form --- */
   dom.memberForm.addEventListener("submit", (e) => {
     e.preventDefault();
+
     const name = dom.memberName.value.trim();
-    const short = dom.memberShort.value.trim();
-    const colorId = dom.memberColor.value || null;
+    const short = dom.memberShort.value.trim() || name.charAt(0);
     const note = dom.memberNote.value.trim();
+    const colorId = dom.memberColor.value || null;
 
-    if (!name || !short) return;
+    // generate default Pastel colors
+    const colors = [
+      "#9AA7B1", "#A8B5A2", "#DACFC4", "#C7A0A7",
+      "#C7CED5", "#B9C4A7", "#C7BEDD", "#B8A19A",
+      "#C8D9C2", "#8FA2B5"
+    ];
 
-    const color =
-      MORANDI_COLORS.find((c) => c.id === colorId) ||
-      MORANDI_COLORS[state.members.length % MORANDI_COLORS.length];
+    const id = genId("m");
+    const color = colorId ? colorId : colors[state.members.length % colors.length];
 
-    const newMember = {
-      id: genId("m"),
+    state.members.push({
+      id,
       name,
-      short: short.slice(0, 2),
+      short,
       note,
-      colorId: color.id,
-      colorHex: color.hex
-    };
-    state.members.push(newMember);
-    saveState();
+      colorHex: color
+    });
 
+    saveState();
     dom.memberForm.reset();
     renderAll();
   });
 
-  // 行程表單
-  dom.scheduleForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const date = dom.scheduleDate.value;
-    const title = dom.scheduleTitle.value.trim();
-    const time = dom.scheduleTime.value || "";
-    const location = dom.scheduleLocation.value.trim();
-
-    if (!date || !title) return;
-
-    const memberIds = Array.from(
-      dom.scheduleMembers.querySelectorAll("input[type=checkbox]:checked")
-    ).map((input) => input.value);
-
-    const schedule = {
-      id: genId("s"),
-      date,
-      time,
-      title,
-      location,
-      memberIds
-    };
-    state.schedules.push(schedule);
-    state.schedules.sort(sortByDateAsc);
-    saveState();
-
-    // 保留日期，其餘清空
-    dom.scheduleTitle.value = "";
-    dom.scheduleLocation.value = "";
-    dom.scheduleTime.value = "";
-    dom.scheduleMembers
-      .querySelectorAll("input[type=checkbox]")
-      .forEach((c) => (c.checked = false));
-
-    renderSchedules();
-  });
-
-  // 記帳表單
+  /* --- Expense Form --- */
   dom.expenseForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const date = dom.expenseDate.value || "";
-    const title = dom.expenseTitle.value.trim();
+
     const amount = parseFloat(dom.expenseAmount.value);
-    const currency = dom.expenseCurrency.value;
     const rate = parseFloat(dom.expenseRate.value);
+    const currency = dom.expenseCurrency.value;
+    const date = dom.expenseDate.value;
+    const title = dom.expenseTitle.value.trim();
     const payerId = dom.expensePayer.value || null;
-    const memberIds = Array.from(
-      dom.expenseMembers.querySelectorAll("input[type=checkbox]:checked")
-    ).map((input) => input.value);
 
-    if (!title || !Number.isFinite(amount) || amount <= 0 || !Number.isFinite(rate) || rate <= 0) {
-      return;
-    }
-    if (memberIds.length === 0) {
-      alert("請至少選擇一位分攤成員 / Please select at least one member to share.");
-      return;
-    }
+    const members = Array.from(dom.expenseMembers.querySelectorAll("input[type=checkbox]:checked"))
+      .map((c) => c.value);
 
-    const expense = {
+    if (!amount || amount <= 0) return alert("金額不正確");
+    if (!members.length) return alert("請勾選分攤成員");
+
+    state.expenses.push({
       id: genId("e"),
-      title,
       date,
       amount,
       currency,
       rate,
+      title,
       payerId,
-      memberIds
-    };
-
-    state.expenses.push(expense);
-    saveState();
-
-    dom.expenseForm.reset();
-    dom.expenseCurrency.value = "TWD";
-    updateExpenseRatePlaceholder();
-    renderExpenses();
-    renderSettlement();
-  });
-
-  // 匯率設定
-  dom.rateJPY.value = state.settings.rateJPY;
-  dom.rateKRW.value = state.settings.rateKRW;
-
-  dom.saveRates.addEventListener("click", () => {
-    const rJPY = parseFloat(dom.rateJPY.value);
-    const rKRW = parseFloat(dom.rateKRW.value);
-    if (!Number.isFinite(rJPY) || rJPY <= 0 || !Number.isFinite(rKRW) || rKRW <= 0) {
-      alert("請輸入有效的匯率數值 / Please input valid rates.");
-      return;
-    }
-    state.settings.rateJPY = rJPY;
-    state.settings.rateKRW = rKRW;
-    saveState();
-    updateExpenseRatePlaceholder();
-    alert("匯率已更新（僅影響新建立的記帳項目）。");
-  });
-
-  dom.expenseCurrency.addEventListener("change", () => {
-    updateExpenseRatePlaceholder();
-  });
-
-  updateExpenseRatePlaceholder();
-}
-
-// 根據幣別預填匯率
-function updateExpenseRatePlaceholder() {
-  const currency = dom.expenseCurrency.value;
-  let rate = 1;
-  if (currency === "JPY") rate = state.settings.rateJPY;
-  if (currency === "KRW") rate = state.settings.rateKRW;
-  dom.expenseRate.value = rate;
-}
-
-// ===== RESPONSIVE TABS =====
-
-function initTabs() {
-  const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
-  tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      tabButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      const targetId = btn.dataset.target;
-      switchPanel(targetId);
+      memberIds: members
     });
+
+    saveState();
+    dom.expenseForm.reset();
+    renderAll();
+  });
+
+  /* --- Schedule Form --- */
+  dom.scheduleForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const title = dom.scheduleTitle.value.trim();
+    const date = dom.scheduleDate.value;
+    const time = dom.scheduleTime.value;
+    const loc = dom.scheduleLocation.value.trim();
+
+    if (!title || !date) return;
+
+    const members = Array.from(dom.scheduleMembers.querySelectorAll("input[type=checkbox]:checked"))
+      .map((c) => c.value);
+
+    state.schedules.push({
+      id: genId("s"),
+      title,
+      date,
+      time,
+      location: loc,
+      memberIds: members
+    });
+
+    saveState();
+
+    dom.scheduleForm.reset();
+    renderSchedules();
+  });
+
+  /* --- Currency Rate Save --- */
+  dom.saveRates.addEventListener("click", () => {
+    const j = parseFloat(dom.rateJPY.value);
+    const k = parseFloat(dom.rateKRW.value);
+    if (j > 0) state.settings.rateJPY = j;
+    if (k > 0) state.settings.rateKRW = k;
+    saveState();
+    alert("匯率已更新！");
   });
 }
 
-function switchPanel(panelId) {
-  if (!isMobileLayout) return;
-  Object.values(dom.panels).forEach((p) => p.classList.remove("active"));
-  const target = document.getElementById(panelId);
-  if (target) target.classList.add("active");
-}
-
-function initResponsive() {
-  function handleResize() {
-    const mobileNow = window.innerWidth <= 900;
-    if (mobileNow !== isMobileLayout) {
-      isMobileLayout = mobileNow;
-      if (!isMobileLayout) {
-        // 桌機：全部顯示
-        Object.values(dom.panels).forEach((p) => p.classList.add("active"));
-      } else {
-        // 手機：只顯示當前 tab
-        const activeTab = document.querySelector(".tab-btn.active");
-        const targetId = activeTab?.dataset.target || "members-panel";
-        switchPanel(targetId);
-      }
-    }
-  }
-  window.addEventListener("resize", handleResize);
-  handleResize(); // 初始
-}
-
-// ===== RENDER =====
-
+/* -----------------------
+   RENDER EVERYTHING
+----------------------- */
 function renderAll() {
   renderMembers();
-  renderScheduleMemberChips();
-  renderExpenseMemberChipsAndPayer();
+  renderExpenseChips();
+  renderExpenseList();
+  renderBalances();
   renderSchedules();
-  renderExpenses();
-  renderSettlement();
+  updateRateFields();
 }
 
+/* -----------------------
+   RENDER Members
+----------------------- */
 function renderMembers() {
   dom.memberList.innerHTML = "";
-  if (state.members.length === 0) return;
 
   state.members.forEach((m) => {
     const row = document.createElement("div");
     row.className = "member-row";
 
-    const main = document.createElement("div");
-    main.className = "member-main";
+    const left = document.createElement("div");
+    left.style.display = "flex";
+    left.style.alignItems = "center";
 
     const dot = document.createElement("div");
     dot.className = "member-dot";
-    dot.textContent = m.short || "?";
-    dot.style.backgroundColor = m.colorHex || "#9AA7B1";
+    dot.style.background = m.colorHex;
+    dot.textContent = m.short;
 
     const info = document.createElement("div");
     info.className = "member-info";
+    info.innerHTML = `
+      <div>${m.name}</div>
+      <div class="member-meta">${m.short}${m.note ? " · " + m.note : ""}</div>
+    `;
 
-    const name = document.createElement("div");
-    name.className = "member-name";
-    name.textContent = m.name;
+    left.appendChild(dot);
+    left.appendChild(info);
 
-    const meta = document.createElement("div");
-    meta.className = "member-meta";
-    meta.textContent = `${m.short} · ${MORANDI_COLORS.find((c) => c.id === m.colorId)?.name || ""}${
-      m.note ? " · " + m.note : ""
-    }`;
+    const btn = document.createElement("button");
+    btn.className = "btn danger";
+    btn.textContent = "刪除";
+    btn.onclick = () => {
+      if (!confirm("確定刪除？")) return;
+      state.members = state.members.filter((x) => x.id !== m.id);
 
-    info.appendChild(name);
-    info.appendChild(meta);
+      // Remove from schedules / expenses
+      state.schedules.forEach((s) => {
+        s.memberIds = s.memberIds.filter((id) => id !== m.id);
+      });
+      state.expenses.forEach((e) => {
+        e.memberIds = e.memberIds.filter((id) => id !== m.id);
+        if (e.payerId === m.id) e.payerId = null;
+      });
 
-    main.appendChild(dot);
-    main.appendChild(info);
+      saveState();
+      renderAll();
+    };
 
-    const actions = document.createElement("div");
-    const delBtn = document.createElement("button");
-    delBtn.className = "btn small danger";
-    delBtn.textContent = "刪除";
-    delBtn.addEventListener("click", () => {
-      if (!confirm(`刪除成員「${m.name}」？此操作也會從行程與記帳中移除該成員。`)) return;
-      deleteMember(m.id);
-    });
-    actions.appendChild(delBtn);
-
-    row.appendChild(main);
-    row.appendChild(actions);
+    row.appendChild(left);
+    row.appendChild(btn);
     dom.memberList.appendChild(row);
   });
 }
 
-function deleteMember(memberId) {
-  state.members = state.members.filter((m) => m.id !== memberId);
-
-  state.schedules.forEach((s) => {
-    s.memberIds = (s.memberIds || []).filter((id) => id !== memberId);
-  });
-
-  state.expenses.forEach((e) => {
-    e.memberIds = (e.memberIds || []).filter((id) => id !== memberId);
-    if (e.payerId === memberId) e.payerId = null;
-  });
-
-  saveState();
-  renderAll();
-}
-
-// 成員複選（行程用）
-function renderScheduleMemberChips() {
-  dom.scheduleMembers.innerHTML = "";
-  state.members.forEach((m) => {
-    const label = document.createElement("label");
-    label.className = "chip";
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = m.id;
-
-    const span = document.createElement("span");
-    span.className = "chip-label";
-
-    const dot = document.createElement("div");
-    dot.className = "member-dot small";
-    dot.textContent = m.short || "?";
-    dot.style.backgroundColor = m.colorHex || "#9AA7B1";
-
-    const txt = document.createElement("span");
-    txt.textContent = m.name;
-
-    span.appendChild(dot);
-    span.appendChild(txt);
-
-    label.appendChild(input);
-    label.appendChild(span);
-
-    dom.scheduleMembers.appendChild(label);
-  });
-}
-
-// 成員複選 + 付款人下拉（記帳用）
-function renderExpenseMemberChipsAndPayer() {
-  // payer select
-  dom.expensePayer.innerHTML = "";
-  const noneOpt = document.createElement("option");
-  noneOpt.value = "";
-  noneOpt.textContent = "共同付款 / None";
-  dom.expensePayer.appendChild(noneOpt);
+/* -----------------------
+   Expenses: Chips & Select
+----------------------- */
+function renderExpenseChips() {
+  // payer
+  dom.expensePayer.innerHTML = "<option value=''>共同付款</option>";
 
   state.members.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m.id;
-    opt.textContent = m.name;
-    dom.expensePayer.appendChild(opt);
+    const option = document.createElement("option");
+    option.value = m.id;
+    option.textContent = m.name;
+    dom.expensePayer.appendChild(option);
   });
 
-  // members chips
+  // chips
   dom.expenseMembers.innerHTML = "";
   state.members.forEach((m) => {
     const label = document.createElement("label");
     label.className = "chip";
 
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = m.id;
-
-    const span = document.createElement("span");
-    span.className = "chip-label";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = m.id;
 
     const dot = document.createElement("div");
     dot.className = "member-dot small";
-    dot.textContent = m.short || "?";
-    dot.style.backgroundColor = m.colorHex || "#9AA7B1";
+    dot.style.background = m.colorHex;
+    dot.textContent = m.short;
 
-    const txt = document.createElement("span");
-    txt.textContent = m.name;
+    const name = document.createElement("span");
+    name.textContent = m.name;
 
-    span.appendChild(dot);
-    span.appendChild(txt);
-
-    label.appendChild(input);
-    label.appendChild(span);
-
+    label.appendChild(checkbox);
+    label.appendChild(dot);
+    label.appendChild(name);
     dom.expenseMembers.appendChild(label);
   });
 }
 
-// ===== SCHEDULE RENDER & DRAG =====
-
-function renderSchedules() {
-  dom.scheduleList.innerHTML = "";
-
-  if (state.schedules.length === 0) return;
-
-  // group by date
-  const byDate = {};
-  state.schedules.forEach((s) => {
-    if (!byDate[s.date]) byDate[s.date] = [];
-    byDate[s.date].push(s);
-  });
-
-  const dates = Object.keys(byDate).sort();
-
-  dates.forEach((date) => {
-    const group = document.createElement("div");
-    group.className = "schedule-date-group";
-    group.dataset.date = date;
-
-    const header = document.createElement("div");
-    header.className = "schedule-date-header";
-    header.addEventListener("click", () => {
-      if (collapsedDates.has(date)) collapsedDates.delete(date);
-      else collapsedDates.add(date);
-      renderSchedules();
-    });
-
-    const headerLeft = document.createElement("div");
-    headerLeft.className = "schedule-date-header-left";
-
-    const label = document.createElement("div");
-    label.className = "schedule-date-text";
-    label.textContent = formatDateLabel(date);
-
-    const sub = document.createElement("div");
-    sub.className = "schedule-date-sub";
-    sub.textContent = `${byDate[date].length} item(s)`;
-
-    headerLeft.appendChild(label);
-    headerLeft.appendChild(sub);
-
-    const toggle = document.createElement("div");
-    toggle.className = "schedule-date-toggle";
-    toggle.textContent = collapsedDates.has(date) ? "展開 ▾" : "收合 ▴";
-
-    header.appendChild(headerLeft);
-    header.appendChild(toggle);
-
-    group.appendChild(header);
-
-    const itemsContainer = document.createElement("div");
-    itemsContainer.className = "schedule-items";
-    itemsContainer.dataset.date = date;
-
-    if (!collapsedDates.has(date)) {
-      byDate[date].forEach((s) => {
-        const item = document.createElement("div");
-        item.className = "schedule-item";
-        item.draggable = true;
-        item.dataset.id = s.id;
-        item.dataset.date = s.date;
-
-        item.addEventListener("dragstart", handleScheduleDragStart);
-        item.addEventListener("dragend", handleScheduleDragEnd);
-        item.addEventListener("dragover", handleScheduleDragOver);
-        item.addEventListener("drop", handleScheduleDrop);
-
-        const main = document.createElement("div");
-        main.className = "schedule-main";
-
-        const titleLine = document.createElement("div");
-        titleLine.className = "schedule-title-line";
-
-        const title = document.createElement("div");
-        title.className = "schedule-title";
-        title.textContent = s.title;
-
-        const time = document.createElement("div");
-        time.className = "schedule-time";
-        time.textContent = s.time ? s.time : "";
-
-        titleLine.appendChild(title);
-        if (s.time) titleLine.appendChild(time);
-
-        const loc = document.createElement("div");
-        loc.className = "schedule-location";
-        loc.textContent = s.location || "";
-
-        const membersWrap = document.createElement("div");
-        membersWrap.className = "schedule-members";
-
-        (s.memberIds || []).forEach((id) => {
-          const m = findMember(id);
-          if (!m) return;
-          const dot = document.createElement("div");
-          dot.className = "member-dot small";
-          dot.textContent = m.short || "?";
-          dot.style.backgroundColor = m.colorHex || "#9AA7B1";
-          membersWrap.appendChild(dot);
-        });
-
-        main.appendChild(titleLine);
-        if (s.location) main.appendChild(loc);
-        if ((s.memberIds || []).length) main.appendChild(membersWrap);
-
-        const side = document.createElement("div");
-        side.style.display = "flex";
-        side.style.flexDirection = "column";
-        side.style.gap = "4px";
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn small secondary";
-        deleteBtn.textContent = "刪除";
-        deleteBtn.addEventListener("click", () => {
-          if (!confirm(`刪除行程「${s.title}」？`)) return;
-          state.schedules = state.schedules.filter((x) => x.id !== s.id);
-          saveState();
-          renderSchedules();
-        });
-
-        side.appendChild(deleteBtn);
-
-        item.appendChild(main);
-        item.appendChild(side);
-
-        itemsContainer.appendChild(item);
-      });
-    }
-
-    group.appendChild(itemsContainer);
-    dom.scheduleList.appendChild(group);
-  });
-}
-
-function handleScheduleDragStart(e) {
-  const id = e.currentTarget.dataset.id;
-  draggingScheduleId = id;
-  e.dataTransfer.effectAllowed = "move";
-  e.currentTarget.classList.add("dragging");
-}
-
-function handleScheduleDragEnd(e) {
-  e.currentTarget.classList.remove("dragging");
-  draggingScheduleId = null;
-  document
-    .querySelectorAll(".schedule-item.drag-over")
-    .forEach((el) => el.classList.remove("drag-over"));
-}
-
-function handleScheduleDragOver(e) {
-  e.preventDefault();
-  if (!draggingScheduleId) return;
-
-  const target = e.currentTarget;
-  const targetId = target.dataset.id;
-  const targetDate = target.dataset.date;
-  const dragItem = state.schedules.find((s) => s.id === draggingScheduleId);
-  if (!dragItem) return;
-  if (dragItem.date !== targetDate) return; // 不跨日期
-
-  // highlight
-  document
-    .querySelectorAll(".schedule-item.drag-over")
-    .forEach((el) => el.classList.remove("drag-over"));
-  target.classList.add("drag-over");
-}
-
-function handleScheduleDrop(e) {
-  e.preventDefault();
-  const target = e.currentTarget;
-  target.classList.remove("drag-over");
-  if (!draggingScheduleId) return;
-
-  const targetId = target.dataset.id;
-  const targetDate = target.dataset.date;
-  const dragItem = state.schedules.find((s) => s.id === draggingScheduleId);
-  if (!dragItem || dragItem.date !== targetDate) return;
-
-  // 在同日期內重新排序
-  const sameDate = state.schedules.filter((s) => s.date === targetDate);
-  const other = state.schedules.filter((s) => s.date !== targetDate);
-
-  const ids = sameDate.map((s) => s.id).filter((id) => id !== draggingScheduleId);
-  const targetIndex = ids.indexOf(targetId);
-  if (targetIndex === -1) return;
-  ids.splice(targetIndex, 0, draggingScheduleId);
-
-  const newSame = ids.map((id) => sameDate.find((s) => s.id === id));
-  state.schedules = [...other, ...newSame].sort(sortByDateAsc);
-  saveState();
-  renderSchedules();
-}
-
-// ===== EXPENSES =====
-
-function renderExpenses() {
+/* -----------------------
+   Expense List
+----------------------- */
+function renderExpenseList() {
   dom.expenseList.innerHTML = "";
-  if (state.expenses.length === 0) return;
 
   state.expenses.forEach((e) => {
     const row = document.createElement("div");
     row.className = "expense-row";
 
-    const main = document.createElement("div");
-    main.className = "expense-main";
+    const left = document.createElement("div");
+    left.innerHTML = `
+      <strong>${e.title}</strong> · ${e.amount} ${e.currency}<br>
+      <span class="expense-meta">${e.date || "無日期"}</span>
+    `;
 
-    const titleLine = document.createElement("div");
-    titleLine.className = "expense-title-line";
-
-    const title = document.createElement("span");
-    title.textContent = e.title;
-
-    const amount = document.createElement("span");
-    amount.textContent = `${e.amount.toFixed(0)} ${e.currency}`;
-    amount.style.fontWeight = "500";
-
-    titleLine.appendChild(title);
-    titleLine.appendChild(amount);
-
-    const meta = document.createElement("div");
-    meta.className = "expense-meta";
-
-    const payer =
-      e.payerId && findMember(e.payerId)
-        ? `付款人：${findMember(e.payerId).name}；`
-        : `付款人：共同 / Multiple；`;
-
-    const membersText = (e.memberIds || [])
-      .map((id) => findMember(id)?.short || "?")
-      .join("、");
-
-    const twdAmount = e.amount * e.rate;
-    const share = (e.memberIds || []).length ? twdAmount / e.memberIds.length : 0;
-
-    meta.textContent = `${e.date || "無日期"} · ${payer} 分攤：${membersText || "－"} · ≈ ${formatTwd(
-      twdAmount
-    )} ，每人約 ${formatTwd(share)}`;
-
-    main.appendChild(titleLine);
-    main.appendChild(meta);
-
-    const side = document.createElement("div");
-    const delBtn = document.createElement("button");
-    delBtn.className = "btn small secondary";
-    delBtn.textContent = "刪除";
-    delBtn.addEventListener("click", () => {
-      if (!confirm(`刪除記帳項目「${e.title}」？`)) return;
+    const btn = document.createElement("button");
+    btn.className = "btn danger";
+    btn.textContent = "刪除";
+    btn.onclick = () => {
+      if (!confirm("刪除記帳？")) return;
       state.expenses = state.expenses.filter((x) => x.id !== e.id);
       saveState();
-      renderExpenses();
-      renderSettlement();
-    });
+      renderAll();
+    };
 
-    side.appendChild(delBtn);
-
-    row.appendChild(main);
-    row.appendChild(side);
-
+    row.appendChild(left);
+    row.appendChild(btn);
     dom.expenseList.appendChild(row);
   });
 }
 
-// ===== SETTLEMENT =====
+/* -----------------------
+   Balances (settlement)
+----------------------- */
+function renderBalances() {
+  const balances = computeBalances();
 
-function computeBalances() {
-  const balances = {};
-  state.members.forEach((m) => {
-    balances[m.id] = {
-      member: m,
-      paid: 0,
-      owed: 0
-    };
-  });
-
-  state.expenses.forEach((e) => {
-    const members = e.memberIds || [];
-    if (members.length === 0) return;
-
-    const twdAmount = e.amount * e.rate;
-    const share = twdAmount / members.length;
-
-    // 付款人付了全額
-    if (e.payerId && balances[e.payerId]) {
-      balances[e.payerId].paid += twdAmount;
-    } else if (!e.payerId) {
-      // 共同付款：視為每人先各付 share（所以 paid += share）
-      members.forEach((id) => {
-        if (balances[id]) balances[id].paid += share;
-      });
-    }
-
-    // 每人應付 share
-    members.forEach((id) => {
-      if (balances[id]) balances[id].owed += share;
-    });
-  });
-
-  return Object.values(balances).map((b) => ({
-    member: b.member,
-    balance: b.paid - b.owed
-  }));
-}
-
-function renderSettlement() {
-  const balanceList = computeBalances();
-
-  // 個人總結
   dom.balanceSummary.innerHTML = "";
-  if (balanceList.length === 0) return;
-
-  balanceList.forEach((b) => {
+  balances.forEach((b) => {
     const li = document.createElement("li");
     li.className = "balance-item";
 
-    const left = document.createElement("div");
-    left.className = "balance-name";
+    const amt = Math.round(b.balance);
 
-    const dot = document.createElement("div");
-    dot.className = "member-dot small";
-    dot.textContent = b.member.short || "?";
-    dot.style.backgroundColor = b.member.colorHex || "#9AA7B1";
+    li.innerHTML = `
+      ${b.member.name}
+      <span class="balance-amount ${amt > 0 ? "positive" : amt < 0 ? "negative" : ""}">
+        ${amt > 0 ? "+" : ""}${amt} TWD
+      </span>
+    `;
 
-    const name = document.createElement("span");
-    name.textContent = b.member.name;
-
-    left.appendChild(dot);
-    left.appendChild(name);
-
-    const right = document.createElement("div");
-    right.className = "balance-amount";
-    right.textContent = formatTwd(Math.abs(b.balance)) + (b.balance >= 0 ? " 應收" : " 應付");
-    if (b.balance > 0.5) right.classList.add("positive");
-    if (b.balance < -0.5) right.classList.add("negative");
-
-    li.appendChild(left);
-    li.appendChild(right);
     dom.balanceSummary.appendChild(li);
   });
 
-  // pairwise
-  renderPairwise(balanceList);
+  renderPairwise(balances);
 }
 
-function renderPairwise(balanceList) {
-  dom.pairwiseList.innerHTML = "";
+function computeBalances() {
+  const balances = {};
 
-  const creditors = [];
-  const debtors = [];
-
-  balanceList.forEach((b) => {
-    if (b.balance > 0.5) {
-      creditors.push({ member: b.member, amount: b.balance });
-    } else if (b.balance < -0.5) {
-      debtors.push({ member: b.member, amount: -b.balance });
-    }
+  state.members.forEach((m) => {
+    balances[m.id] = { member: m, balance: 0 };
   });
 
-  if (!creditors.length && !debtors.length) {
-    const li = document.createElement("li");
-    li.className = "pairwise-item";
-    li.textContent = "所有人的結餘皆已平衡，無需結算。";
-    dom.pairwiseList.appendChild(li);
-    return;
-  }
+  state.expenses.forEach((e) => {
+    const total = e.amount * e.rate;
+    const ids = e.memberIds;
+    const share = total / ids.length;
 
-  // greedy match
-  let i = 0;
-  let j = 0;
-  const transactions = [];
-
-  while (i < debtors.length && j < creditors.length) {
-    const debtor = debtors[i];
-    const creditor = creditors[j];
-    const amt = Math.min(debtor.amount, creditor.amount);
-
-    if (amt > 0.5) {
-      transactions.push({
-        from: debtor.member,
-        to: creditor.member,
-        amount: amt
+    if (e.payerId) {
+      balances[e.payerId].balance += total;
+    } else {
+      // multiple payer
+      ids.forEach((id) => {
+        balances[id].balance += share;
       });
     }
 
-    debtor.amount -= amt;
-    creditor.amount -= amt;
+    ids.forEach((id) => {
+      balances[id].balance -= share;
+    });
+  });
 
-    if (debtor.amount <= 0.5) i++;
-    if (creditor.amount <= 0.5) j++;
-  }
+  return Object.values(balances);
+}
 
-  if (!transactions.length) {
+/* -----------------------
+   Pairwise settlement
+----------------------- */
+function renderPairwise(list) {
+  dom.pairwiseList.innerHTML = "";
+
+  const debtors = list.filter((b) => b.balance < -1).map((b) => ({
+    member: b.member,
+    amount: -b.balance
+  }));
+
+  const creditors = list.filter((b) => b.balance > 1).map((b) => ({
+    member: b.member,
+    amount: b.balance
+  }));
+
+  let i = 0, j = 0;
+
+  while (i < debtors.length && j < creditors.length) {
+    const d = debtors[i];
+    const c = creditors[j];
+    const x = Math.min(d.amount, c.amount);
+
     const li = document.createElement("li");
     li.className = "pairwise-item";
-    li.textContent = "無需進一步結算。";
+    li.textContent = `${d.member.name} → ${c.member.name}：${Math.round(x)} TWD`;
     dom.pairwiseList.appendChild(li);
-    return;
-  }
 
-  transactions.forEach((t) => {
-    const li = document.createElement("li");
-    li.className = "pairwise-item";
-    li.textContent = `${t.from.name} → ${t.to.name}：${formatTwd(t.amount)}`;
-    dom.pairwiseList.appendChild(li);
+    d.amount -= x;
+    c.amount -= x;
+
+    if (d.amount < 1) i++;
+    if (c.amount < 1) j++;
+  }
+}
+
+/* -----------------------
+   SCHEDULE (Right Pane)
+----------------------- */
+
+const collapsed = new Set();
+
+function renderSchedules() {
+  dom.scheduleList.innerHTML = "";
+
+  const grouped = {};
+  state.schedules.forEach((s) => {
+    if (!grouped[s.date]) grouped[s.date] = [];
+    grouped[s.date].push(s);
+  });
+
+  const dates = Object.keys(grouped).sort();
+
+  dates.forEach((d) => {
+    const group = document.createElement("div");
+    group.className = "schedule-date-group";
+
+    const header = document.createElement("div");
+    header.className = "schedule-date-header";
+    header.textContent = dateLabel(d);
+    header.onclick = () => {
+      collapsed.has(d) ? collapsed.delete(d) : collapsed.add(d);
+      renderSchedules();
+    };
+
+    group.appendChild(header);
+
+    if (!collapsed.has(d)) {
+      const wrap = document.createElement("div");
+      wrap.className = "schedule-items";
+
+      grouped[d].forEach((s) => {
+        const item = document.createElement("div");
+        item.className = "schedule-item";
+        item.draggable = true;
+
+        item.dataset.id = s.id;
+        item.dataset.date = s.date;
+
+        item.innerHTML = `
+          <div>
+            <strong>${s.title}</strong>
+            ${s.time ? " · " + s.time : ""}
+            <br>
+            <span style="font-size:11px;color:#666;">${s.location || ""}</span>
+          </div>
+          <button class="btn danger small">刪除</button>
+        `;
+
+        item.querySelector("button").onclick = () => {
+          if (!confirm("刪除行程？")) return;
+          state.schedules = state.schedules.filter((x) => x.id !== s.id);
+          saveState();
+          renderSchedules();
+        };
+
+        // drag events
+        item.addEventListener("dragstart", scheduleDragStart);
+        item.addEventListener("dragover", scheduleDragOver);
+        item.addEventListener("drop", scheduleDrop);
+        item.addEventListener("dragend", scheduleDragEnd);
+
+        wrap.appendChild(item);
+      });
+
+      group.appendChild(wrap);
+    }
+
+    dom.scheduleList.appendChild(group);
+  });
+}
+
+let draggingId = null;
+
+function scheduleDragStart(e) {
+  draggingId = e.currentTarget.dataset.id;
+  e.dataTransfer.effectAllowed = "move";
+  e.currentTarget.classList.add("dragging");
+}
+
+function scheduleDragOver(e) {
+  e.preventDefault();
+  const target = e.currentTarget;
+  if (target.dataset.date !== findSchedule(draggingId).date) return;
+  target.classList.add("drag-over");
+}
+
+function scheduleDrop(e) {
+  const target = e.currentTarget;
+  const targetId = target.dataset.id;
+
+  const dragItem = findSchedule(draggingId);
+  const targetDate = target.dataset.date;
+
+  if (dragItem.date !== targetDate) return;
+
+  const list = state.schedules.filter((s) => s.date === targetDate);
+  const rest = state.schedules.filter((s) => s.date !== targetDate);
+
+  const ids = list.map((s) => s.id).filter((id) => id !== draggingId);
+  const index = ids.indexOf(targetId);
+  ids.splice(index, 0, draggingId);
+
+  const newList = ids.map((id) => list.find((s) => s.id === id));
+
+  state.schedules = [...rest, ...newList];
+  saveState();
+  renderSchedules();
+}
+
+function scheduleDragEnd(e) {
+  draggingId = null;
+  document.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
+  e.currentTarget.classList.remove("dragging");
+}
+
+function findSchedule(id) {
+  return state.schedules.find((s) => s.id === id);
+}
+
+/* -----------------------
+   Rates
+----------------------- */
+function updateRateFields() {
+  dom.rateJPY.value = state.settings.rateJPY;
+  dom.rateKRW.value = state.settings.rateKRW;
+
+  const currency = dom.expenseCurrency.value;
+  if (currency === "JPY") dom.expenseRate.value = state.settings.rateJPY;
+  else if (currency === "KRW") dom.expenseRate.value = state.settings.rateKRW;
+  else dom.expenseRate.value = 1;
+
+  dom.expenseCurrency.onchange = updateRateFields;
+}
+
+/* -----------------------
+   Split Pane Drag
+----------------------- */
+
+function initSplitter() {
+  let dragging = false;
+
+  dom.splitter.addEventListener("mousedown", () => {
+    dragging = true;
+    document.body.style.cursor = "row-resize";
+  });
+
+  document.addEventListener("mouseup", () => {
+    dragging = false;
+    document.body.style.cursor = "";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+
+    const rect = dom.leftPane.getBoundingClientRect();
+    let y = e.clientY - rect.top;
+
+    if (y < 120) y = 120;
+    if (y > rect.height - 160) y = rect.height - 160;
+
+    dom.leftPane.style.gridTemplateRows = `${y}px 6px 1fr`;
   });
 }

@@ -1,270 +1,379 @@
-/* =========================================================
-   RESET
-========================================================= */
+/* ================= RESET ================= */
 * {
     box-sizing: border-box;
   }
   
-  body {
+  html, body {
     margin: 0;
-    font-family: "Noto Sans TC", system-ui, sans-serif;
+    padding: 0;
+  }
+  
+  body {
+    font-family: "Noto Sans TC", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     background: #f4f6f8;
     color: #222;
   }
   
-  /* =========================================================
-     三欄布局（桌機）— 固定寬度比例
-     左 25% / 中 50% / 右 25%
-  ========================================================= */
+  /* ================= Layout ================= */
   
-  #layout {
+  .app {
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
+  }
+  
+  .app-header {
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e3e7;
+  }
+  
+  .app-header h1 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  
+  .app-header p {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    color: #666;
+  }
+  
+  .app-layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr 1.2fr;
     gap: 1rem;
     padding: 1rem;
   }
   
-  #col-members {
-    flex: 0 0 25%;
-    min-width: 260px;
+  /* Panels */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
   
-  #col-trip {
-    flex: 0 0 50%;
-    min-width: 380px;
+  .panel h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
   }
   
-  #col-expenses {
-    flex: 0 0 25%;
-    min-width: 260px;
-  }
-  
-  /* 共用欄位設定 */
-  .column {
-    min-width: 0;
-  }
-  
-  /* 標題 */
-  .col-title {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin: 0 0 .8rem 0;
-    color: #2a3f63;
-  }
-  
-  /* =========================================================
-     卡片
-  ========================================================= */
+  /* Cards */
   .card {
-    background: white;
-    padding: 1.2rem;
-    margin-bottom: 1.2rem;
+    background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 2px 8px #0001;
+    padding: 0.85rem 0.95rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e1e3e8;
   }
   
-  .card h2 {
-    margin-top: 0;
-    margin-bottom: .8rem;
-    border-left: 4px solid #4a6fa5;
-    padding-left: .5rem;
-    font-size: 1.1rem;
+  .card h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
   }
   
-  /* =========================================================
-     表單格線
-  ========================================================= */
+  .card h4 {
+    margin: 0.4rem 0 0.2rem;
+    font-size: 0.85rem;
+  }
+  
+  /* Forms */
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: .8rem 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem 0.8rem;
+    font-size: 0.88rem;
   }
   
   .form-grid label {
     display: flex;
     flex-direction: column;
-    font-size: .9rem;
+    gap: 0.2rem;
   }
   
-  input, textarea, select {
-    margin-top: .3rem;
-    padding: .55rem .7rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: .9rem;
+  .form-grid input,
+  .form-grid select {
+    padding: 0.4rem 0.45rem;
+    border-radius: 8px;
+    border: 1px solid #cfd4dd;
+    font-size: 0.86rem;
+    outline: none;
+    background: #fafbfc;
   }
   
-  textarea {
-    resize: vertical;
+  .form-grid input:focus,
+  .form-grid select:focus {
+    border-color: #9aa7b1;
+    box-shadow: 0 0 0 1px rgba(154, 167, 177, 0.25);
   }
   
   .full {
     grid-column: 1 / -1;
   }
   
-  /* =========================================================
-     按鈕
-  ========================================================= */
+  .label-title {
+    display: inline-block;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    color: #555;
+  }
+  
+  /* Buttons */
   .btn {
-    padding: .65rem 1rem;
-    font-size: .9rem;
-    border-radius: 8px;
-    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid transparent;
+    font-size: 0.88rem;
     cursor: pointer;
+    transition: background 0.1s ease, transform 0.05s ease, box-shadow 0.08s ease;
   }
   
   .btn.primary {
-    background: #2962ff;
-    color: white;
+    background: #9aa7b1;
+    border-color: #9aa7b1;
+    color: #fff;
+    font-weight: 500;
   }
   
-  .btn.secondary {
-    background: #e3e8f0;
+  .btn.primary:hover {
+    background: #8593a0;
+    border-color: #8593a0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
   
   .btn.danger {
-    background: #d9534f;
-    color: white;
+    background: #f7d7d7;
+    border-color: #f1b5b5;
+    color: #b13939;
   }
   
-  .btn.full {
-    width: 100%;
+  .btn.danger:hover {
+    background: #f3c4c4;
   }
   
-  /* =========================================================
-     表格
-  ========================================================= */
+  .btn:active {
+    transform: translateY(1px);
+    box-shadow: none;
+  }
+  
+  /* Table */
   .table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.8rem;
   }
   
-  .table th {
-    background: #4a6fa5;
-    color: white;
-    padding: .5rem;
-    font-size: .85rem;
-  }
-  
+  .table th,
   .table td {
-    padding: .45rem;
-    border-bottom: 1px solid #ddd;
-    font-size: .85rem;
+    padding: 0.35rem 0.35rem;
+    text-align: left;
   }
   
-  /* =========================================================
-     行程：多日 / 活動
-  ========================================================= */
-  .day-card {
-    background: #fff;
-    border: 1px solid #d0d7de;
-    border-radius: 10px;
-    margin-bottom: .8rem;
-    overflow: hidden;
+  .table thead {
+    background: #f5f6f8;
   }
   
-  .day-header {
-    background: #eef2f7;
-    padding: .8rem 1rem;
-    cursor: pointer;
-    font-weight: bold;
+  .table tbody tr:nth-child(even) {
+    background: #fafbfc;
+  }
+  
+  /* Member dots & chips */
+  .member-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: #fff;
+    margin-right: 0.25rem;
+    flex-shrink: 0;
+  }
+  
+  .member-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.35rem 0.1rem 0.15rem;
+    border-radius: 999px;
+    background: #f2f3f5;
+    font-size: 0.72rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.15rem;
+  }
+  
+  /* Member checkboxes for colors */
+  .member-checkboxes {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.45rem;
   }
   
-  .day-header:hover {
-    background: #e1e7ef;
+  .member-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    background: #f6f7f9;
+    border-radius: 999px;
+    padding: 0.15rem 0.35rem 0.15rem 0.25rem;
   }
   
-  .day-content {
-    display: none;
-    padding: 1rem;
+  .member-checkbox input {
+    margin: 0;
   }
   
-  .day-content.open {
-    display: block;
+  /* Lists */
+  .item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.84rem;
   }
   
-  .activity {
-    padding: .7rem 0;
-    border-bottom: 1px solid #eee;
+  .item-row {
+    padding: 0.45rem 0.3rem;
+    border-bottom: 1px dashed #e0e3e8;
   }
   
-  .activity:last-child {
+  .item-row:last-child {
     border-bottom: none;
   }
   
-  .activity-time {
-    color: #4a6fa5;
-    font-size: .85rem;
-  }
-  
-  .activity-title {
-    font-size: 1rem;
-    font-weight: bold;
-  }
-  
-  .activity-location {
-    margin-top: .2rem;
-    font-size: .85rem;
-  }
-  
-  /* =========================================================
-     參加色點（B：顏色 + 字）
-  ========================================================= */
-  .attendees {
-    margin-top: .4rem;
+  .item-row-header {
     display: flex;
-    flex-wrap: wrap;
-    gap: .3rem;
-  }
-  
-  .dot {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-size: .75rem;
-    color: white;
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+    margin-bottom: 0.15rem;
+  }
+  
+  .item-row-title {
+    font-weight: 600;
+  }
+  
+  .item-row-meta {
+    font-size: 0.75rem;
+    color: #777;
+  }
+  
+  .item-row-members {
+    margin-top: 0.2rem;
+  }
+  
+  /* Small badge for amount */
+  .badge-amount {
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    background: #e1e7ef;
+    font-size: 0.75rem;
+  }
+  
+  /* Hint text */
+  .hint-text {
+    margin: 0.4rem 0 0;
+    font-size: 0.72rem;
+    color: #888;
+  }
+  
+  /* ===== 行程：日期分組 + 拖移排序 ===== */
+  .schedule-group-list {
+    padding: 0;
+    margin: 0;
+  }
+  
+  .schedule-date-group {
+    margin-bottom: 0.45rem;
+  }
+  
+  .schedule-date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.3rem;
+    background: #f5f6f8;
+    border-radius: 8px;
+    font-size: 0.8rem;
     cursor: pointer;
-    font-weight: bold;
+    user-select: none;
   }
   
-  .dot.off {
-    opacity: .25;
-    filter: grayscale(1);
-  }
-  
-  /* =========================================================
-     記帳
-  ========================================================= */
-  .settlement li {
-    margin: .3rem 0;
-  }
-  
-  .checkbox-container label {
+  .schedule-date-header span {
     display: inline-flex;
     align-items: center;
-    margin-right: 10px;
-    margin-bottom: 6px;
+    gap: 0.3rem;
   }
   
-  /* =========================================================
-     手機版（行程 → 記帳 → 成員）
-  ========================================================= */
-  @media (max-width: 900px) {
-    #layout {
-      display: block;
-      padding: .5rem;
-    }
+  .schedule-date-header span::before {
+    content: "📅";
+    font-size: 0.9rem;
+  }
   
-    #col-trip { order: 1; }
-    #col-expenses { order: 2; }
-    #col-members { order: 3; }
+  .schedule-day-list {
+    list-style: none;
+    margin: 0.15rem 0 0;
+    padding-left: 0;
+  }
   
-    .column {
-      margin-bottom: 1.5rem;
+  .schedule-date-group.collapsed .schedule-day-list {
+    display: none;
+  }
+  
+  .schedule-item.dragging {
+    opacity: 0.5;
+    background: #e8ecf3;
+  }
+  
+  .schedule-item.drop-target-before {
+    border-top: 2px solid #9aa7b1;
+  }
+  
+  /* ===== 結算 Summary ===== */
+  .balance-summary-list,
+  .pairwise-summary-list {
+    list-style: none;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    font-size: 0.8rem;
+  }
+  
+  .balance-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.18rem 0;
+    border-bottom: 1px dashed #eceff3;
+  }
+  
+  .balance-summary-item:last-child {
+    border-bottom: none;
+  }
+  
+  .text-positive {
+    color: #2f7d4c;
+  }
+  
+  .text-negative {
+    color: #b13939;
+  }
+  
+  .text-muted {
+    color: #888;
+  }
+  
+  .pairwise-summary-list li {
+    padding: 0.15rem 0;
+  }
+  
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .app-layout {
+      grid-template-columns: 1fr;
     }
   }
   

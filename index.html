@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>家族旅遊工具（行程 / 成員 / 記帳）</title>
+  <title>家族旅遊工具（成員 / 行程 / 記帳）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="manifest" href="manifest.json" />
@@ -12,175 +12,170 @@
 </head>
 
 <body>
+  <div class="app">
+    <header class="app-header">
+      <h1>家族旅遊工具</h1>
+      <p>左：成員管理　｜　中：行程表（依日期分組＋拖移排序）　｜　右：記帳＋自動結算</p>
+    </header>
 
-  <!-- ========================================================= -->
-  <!-- 三欄區塊（桌機）/ 單欄堆疊（手機） -->
-  <!-- ========================================================= -->
-  <main id="layout">
+    <main class="app-layout">
+      <!-- ================= 左：成員管理 ================= -->
+      <section class="panel panel-left">
+        <h2>成員管理</h2>
 
-    <!-- 左欄：成員 -->
-    <section id="col-members" class="column">
-      <h1 class="col-title">成員</h1>
+        <div class="card">
+          <h3>新增成員</h3>
+          <form id="member-form" class="form-grid">
+            <label>
+              姓名
+              <input id="member-name" type="text" required />
+            </label>
 
-      <div class="card">
-        <form id="member-form" class="form-grid">
+            <label>
+              縮寫（1–2 字，會顯示在小點上）
+              <input id="member-short" type="text" maxlength="2" required />
+            </label>
 
-          <label>
-            姓名
-            <input id="member-name" required>
-          </label>
+            <label>
+              顏色（莫蘭迪）
+              <select id="member-color">
+                <option value="">自動指派顏色</option>
+              </select>
+            </label>
 
-          <label>
-            顏色（#ff8800）
-            <input id="member-color" placeholder="#ff8800">
-          </label>
+            <label class="full">
+              備註
+              <input id="member-note" type="text" />
+            </label>
 
-          <label>
-            電話
-            <input id="member-phone">
-          </label>
-
-          <label class="full">
-            備註
-            <textarea id="member-note" rows="2"></textarea>
-          </label>
-
-          <button class="btn primary full">新增成員</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <h2>成員列表</h2>
-        <table class="table" id="member-table">
-          <thead>
-            <tr>
-              <th>#</th><th>姓名</th><th>顏色</th><th>電話</th><th>備註</th><th>操作</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <p id="total-members">總人數：0 人</p>
-      </div>
-    </section>
-
-    <!-- 中欄：行程 -->
-    <section id="col-trip" class="column">
-      <h1 class="col-title">行程</h1>
-
-      <!-- 基本行程設定 -->
-      <div class="card">
-        <form id="trip-form" class="form-grid">
-          <label>
-            旅遊名稱
-            <input id="trip-title">
-          </label>
-
-          <label>
-            日期
-            <input id="trip-date">
-          </label>
-
-          <label>
-            集合地點
-            <input id="trip-location">
-          </label>
-
-          <label class="full">
-            備註
-            <textarea id="trip-note" rows="2"></textarea>
-          </label>
-
-          <button class="btn primary full">儲存行程資訊</button>
-        </form>
-
-        <div id="trip-display" class="info-box"></div>
-      </div>
-
-      <!-- 新增活動 / 天數 -->
-      <div class="card">
-        <h2>新增活動</h2>
-
-        <div class="form-grid">
-          <label>
-            天數
-            <select id="day-select"></select>
-          </label>
-
-          <label>
-            時間
-            <input type="time" id="act-time">
-          </label>
-
-          <label>
-            行程名稱
-            <input id="act-title">
-          </label>
-
-          <label class="full">
-            地點
-            <input id="act-location">
-          </label>
-
-          <label class="full">
-            Google Map 連結
-            <input id="act-link">
-          </label>
-
-          <button id="add-activity" class="btn primary">加入活動</button>
-          <button id="new-day" class="btn secondary">新增一天</button>
+            <button type="submit" class="btn primary full">新增成員</button>
+          </form>
         </div>
-      </div>
 
-      <div id="days-container"></div>
-    </section>
+        <div class="card">
+          <h3>成員列表</h3>
+          <table class="table" id="member-table">
+            <thead>
+              <tr>
+                <th>顏色</th>
+                <th>姓名</th>
+                <th>縮寫</th>
+                <th>備註</th>
+                <th>刪除</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 成員由 JS 動態插入 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-    <!-- 右欄：記帳 -->
-    <section id="col-expenses" class="column">
-      <h1 class="col-title">記帳</h1>
+      <!-- ================= 中：行程表 ================= -->
+      <section class="panel panel-middle">
+        <h2>行程表</h2>
 
-      <div class="card">
-        <form id="expense-form" class="form-grid">
+        <div class="card">
+          <h3>新增行程</h3>
+          <form id="schedule-form" class="form-grid">
+            <label>
+              日期
+              <input id="schedule-date" type="date" required />
+            </label>
 
-          <label>
-            消費名稱
-            <input id="exp-name" required>
-          </label>
+            <label>
+              時間
+              <input id="schedule-time" type="time" />
+            </label>
 
-          <label>
-            金額
-            <input id="exp-amount" type="number" required>
-          </label>
+            <label class="full">
+              行程名稱
+              <input id="schedule-title" type="text" required />
+            </label>
 
-          <label>
-            付款人
-            <select id="exp-payer"></select>
-          </label>
+            <label class="full">
+              地點 / 備註
+              <input id="schedule-location" type="text" />
+            </label>
 
-          <label class="full">
-            分帳成員
-            <div id="exp-members" class="checkbox-container"></div>
-          </label>
+            <div class="full">
+              <span class="label-title">參與成員（打勾顏色小點）</span>
+              <div id="schedule-members" class="member-checkboxes">
+                <!-- 勾選成員由 JS 動態插入 -->
+              </div>
+            </div>
 
-          <button class="btn primary full">加入記帳</button>
-        </form>
-      </div>
+            <button type="submit" class="btn primary full">新增行程</button>
+          </form>
+        </div>
 
-      <div class="card">
-        <h2>紀錄</h2>
-        <table class="table" id="expense-table">
-          <thead><tr><th>項目</th><th>金額</th><th>付款人</th><th>分帳對象</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+        <div class="card">
+          <h3>行程列表（依日期分組，可拖移排序）</h3>
+          <ul id="schedule-list" class="item-list schedule-group-list">
+            <!-- 行程項目由 JS 動態插入 -->
+          </ul>
+          <p class="hint-text">提示：同一天的行程可以拖曳排序，點日期可以收合 / 展開。</p>
+        </div>
+      </section>
 
-      <div class="card">
-        <h2>結算</h2>
-        <ul id="settlement-list" class="settlement"></ul>
-      </div>
+      <!-- ================= 右：記帳 ================= -->
+      <section class="panel panel-right">
+        <h2>記帳</h2>
 
-    </section>
+        <div class="card">
+          <h3>新增記帳</h3>
+          <form id="expense-form" class="form-grid">
+            <label>
+              日期
+              <input id="expense-date" type="date" />
+            </label>
 
-  </main>
+            <label>
+              金額
+              <input id="expense-amount" type="number" step="1" min="0" required />
+            </label>
+
+            <label class="full">
+              項目名稱
+              <input id="expense-title" type="text" required />
+            </label>
+
+            <label>
+              付款人
+              <select id="expense-payer">
+                <!-- 付款人選單由 JS 動態插入 -->
+              </select>
+            </label>
+
+            <div class="full">
+              <span class="label-title">這筆是哪些成員的花費？（打勾顏色小點，平均分攤）</span>
+              <div id="expense-members" class="member-checkboxes">
+                <!-- 勾選成員由 JS 動態插入 -->
+              </div>
+            </div>
+
+            <button type="submit" class="btn primary full">新增記帳</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>記帳紀錄</h3>
+          <ul id="expense-list" class="item-list">
+            <!-- 記帳項目由 JS 動態插入 -->
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>結算 Summary</h3>
+          <div id="balance-summary"></div>
+          <hr />
+          <h4>兩兩結算建議</h4>
+          <div id="pairwise-summary"></div>
+          <p class="hint-text">說明：每筆記帳金額會在勾選成員之間平均分攤，付款人視為代墊者。</p>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>

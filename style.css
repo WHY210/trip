@@ -1,18 +1,17 @@
-* {
-    box-sizing: border-box;
-  }
-  
-  body {
+/* =========================================================
+   基本排版
+========================================================= */
+body {
     margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f3f4f6;
-    color: #111827;
+    font-family: "Noto Sans TC", system-ui, sans-serif;
+    background: #f4f6f8;
+    color: #222;
   }
   
   .topbar {
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    background: #4a6fa5;
     color: white;
-    padding: 1.5rem 1rem;
+    padding: 1.2rem;
     text-align: center;
   }
   
@@ -22,306 +21,236 @@
   }
   
   .subtitle {
-    margin: 0.25rem 0 0;
-    opacity: 0.9;
-    font-size: 0.9rem;
+    margin-top: .3rem;
+    font-size: .9rem;
+    opacity: .9;
   }
   
   .container {
-    max-width: 1000px;
-    margin: 1rem auto 3rem;
+    max-width: 900px;
+    margin: 1rem auto;
     padding: 0 1rem;
   }
   
+  /* =========================================================
+     卡片 Card
+  ========================================================= */
   .card {
     background: white;
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 2px 8px #0001;
   }
   
   .card h2 {
     margin-top: 0;
-    font-size: 1.2rem;
+    border-left: 4px solid #4a6fa5;
+    padding-left: .5rem;
   }
   
+  /* =========================================================
+     表單 Form Grid
+  ========================================================= */
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem 1rem;
-    margin-top: 0.5rem;
+    gap: .8rem 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
   
   .form-grid label {
-    font-size: 0.9rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    font-size: .9rem;
   }
   
-  .form-grid .full {
-    grid-column: 1 / -1;
-  }
-  
-  input[type="text"],
-  input[type="tel"],
-  input[type="number"],
-  input[type="time"],
-  input[type="url"],
-  input[type="color"],
-  textarea,
-  select {
-    padding: 0.5rem 0.6rem;
-    border-radius: 0.5rem;
-    border: 1px solid #d1d5db;
-    font-size: 0.9rem;
-    outline: none;
-    background: white;
-  }
-  
-  input:focus,
-  textarea:focus,
-  select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+  input, textarea, select {
+    margin-top: .3rem;
+    padding: .5rem;
+    font-size: .9rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
   }
   
   textarea {
     resize: vertical;
   }
   
+  /* =========================================================
+     Buttons
+  ========================================================= */
   .btn {
+    padding: .55rem 1rem;
+    border-radius: 8px;
     border: none;
-    border-radius: 999px;
-    padding: 0.45rem 0.9rem;
-    font-size: 0.9rem;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
+    font-size: .9rem;
   }
   
   .btn.primary {
-    background: #2563eb;
+    background: #4a6fa5;
     color: white;
   }
   
   .btn.secondary {
-    background: #e5e7eb;
-    color: #111827;
+    background: #e3e8f0;
   }
   
   .btn.danger {
-    background: #dc2626;
+    background: #d9534f;
     color: white;
   }
   
   .btn.small {
-    padding: 0.25rem 0.7rem;
-    font-size: 0.8rem;
+    padding: .3rem .6rem;
+    font-size: .8rem;
   }
   
-  .btn:active {
-    transform: translateY(1px);
-  }
-  
-  .hint {
-    font-size: 0.85rem;
-    color: #6b7280;
-  }
-  
-  .hint-list {
-    font-size: 0.9rem;
-    color: #4b5563;
-    padding-left: 1.2rem;
-  }
-  
-  .hint-list ul {
-    margin-top: 0.25rem;
-    padding-left: 1.2rem;
-  }
-  
-  .info-box {
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    font-size: 0.9rem;
-    color: #1d4ed8;
-  }
-  
-  .list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    flex-wrap: wrap;
-  }
-  
-  .list-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  
+  /* =========================================================
+     會員表格
+  ========================================================= */
   .table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
-  }
-  
-  .table th,
-  .table td {
-    padding: 0.4rem 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    vertical-align: top;
+    margin-top: .8rem;
   }
   
   .table th {
-    background: #f9fafb;
-    text-align: left;
-    font-weight: 600;
+    background: #4a6fa5;
+    color: white;
+    padding: .5rem;
+    font-size: .85rem;
   }
   
-  .footer {
-    text-align: center;
-    padding: 0.75rem 1rem;
-    font-size: 0.75rem;
-    color: #6b7280;
+  .table td {
+    padding: .45rem;
+    border-bottom: 1px solid #ddd;
+    font-size: .85rem;
   }
   
-  /* 記帳區 checkbox */
-  .checkbox-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  /* =========================================================
+     info box
+  ========================================================= */
+  .info-box {
+    background: #f8fbff;
+    border-left: 4px solid #4a6fa5;
+    padding: .8rem;
+    margin-top: 1rem;
   }
   
+  /* =========================================================
+     Checkbox container
+  ========================================================= */
   .checkbox-container label {
-    background: #f3f4f6;
-    padding: 0.3rem 0.6rem;
-    border-radius: 0.4rem;
-    cursor: pointer;
-    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    margin-bottom: 6px;
   }
   
-  .settlement {
-    padding-left: 1rem;
-    font-size: 0.9rem;
-    color: #374151;
-  }
-  
-  /* 成員顏色圓點 */
-  .member-color-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 999px;
-    display: inline-block;
-    border: 1px solid #9ca3af;
-  }
-  
-  /* 多日行程區 */
-  .days-container {
-    margin-top: 0.75rem;
-  }
-  
-  .day-block {
-    border-radius: 0.6rem;
-    border: 1px solid #e5e7eb;
-    margin-bottom: 0.5rem;
+  /* =========================================================
+     Day（多日行程）Accordion
+  ========================================================= */
+  .day-card {
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    margin-bottom: .8rem;
     overflow: hidden;
+    background: #fff;
   }
   
   .day-header {
-    background: #f9fafb;
-    padding: 0.5rem 0.75rem;
+    background: #eef2f7;
+    padding: .8rem 1rem;
     cursor: pointer;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    font-size: 0.95rem;
+    font-weight: bold;
+    font-size: 1rem;
   }
   
-  .day-header span {
-    font-weight: 600;
+  .day-header:hover {
+    background: #e1e7ef;
   }
   
-  .day-header small {
-    color: #6b7280;
+  .day-content {
+    padding: 1rem;
+    display: none;   /* 手風琴效果 */
   }
   
-  .day-body {
-    padding: 0.4rem 0.75rem 0.6rem;
-    display: none;
-  }
-  
-  .day-block.open .day-body {
+  .day-content.open {
     display: block;
   }
   
-  .activity-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
+  /* =========================================================
+     行程項目 Activity
+  ========================================================= */
+  .activity {
+    border-bottom: 1px solid #eee;
+    padding: .6rem 0;
   }
   
-  .activity-table th,
-  .activity-table td {
-    padding: 0.3rem 0.35rem;
-    border-bottom: 1px solid #e5e7eb;
-    vertical-align: middle;
+  .activity:last-child {
+    border-bottom: none;
   }
   
-  .activity-table th {
-    background: #f3f4f6;
+  .activity-title {
+    font-weight: bold;
+    font-size: .95rem;
   }
   
-  .activity-link {
-    font-size: 0.8rem;
-    color: #2563eb;
-    text-decoration: none;
+  .activity-time {
+    color: #4a6fa5;
+    font-size: .85rem;
   }
   
-  .activity-link:hover {
-    text-decoration: underline;
+  .activity-location {
+    font-size: .85rem;
+    margin-top: .15rem;
   }
   
-  /* 行程成員小圓點列 */
-  .member-dots {
+  /* =========================================================
+     參加者顯示（Colored Dot + Initial）
+  ========================================================= */
+  .attendees {
+    margin-top: .4rem;
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
     flex-wrap: wrap;
+    gap: .4rem;
   }
   
-  .member-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 999px;
+  .dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    font-size: .7rem;
+    border-radius: 50%;
     cursor: pointer;
-    border: 2px solid transparent;
+    color: white;
+    font-weight: bold;
   }
   
-  .member-dot.inactive {
-    background: transparent !important;
-    opacity: 0.4;
+  .dot.off {
+    opacity: .25;
+    filter: grayscale(1);
   }
   
-  .member-dot.inactive {
-    /* 邊框顏色會在 JS 裡用 inline style 設定 */
+  /* =========================================================
+     Settlement
+  ========================================================= */
+  .settlement li {
+    padding: .3rem 0;
   }
   
-  @media (max-width: 600px) {
-    .card {
-      padding: 0.85rem 0.9rem;
-    }
-  
-    .topbar h1 {
-      font-size: 1.3rem;
-    }
+  /* =========================================================
+     Footer
+  ========================================================= */
+  .footer {
+    text-align: center;
+    margin: 2rem 0;
+    color: #666;
+    font-size: .85rem;
   }
   

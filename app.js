@@ -815,12 +815,6 @@ function renderSharedMemberChips() {
     const label = document.createElement("label");
     label.className = "chip";
     label.title = m.name; // Show name on hover
-    label.onclick = (e) => {
-      if (e.target.tagName !== "INPUT") {
-        e.preventDefault();
-        openMemberDetailModal(m.id);
-      }
-    };
 
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -841,21 +835,45 @@ function renderSharedMemberChips() {
 
 function renderMemberChipsForSchedule() {
   dom.scheduleMembers.innerHTML = "";
+
+  const updateSelectAllState = () => {
+    const memberCheckboxes = dom.scheduleMembers.querySelectorAll('.schedule-member-checkbox');
+    const selectAllCheckbox = dom.scheduleMembers.querySelector('#schedule-select-all-checkbox');
+    if (!selectAllCheckbox) return;
+    
+    const allChecked = [...memberCheckboxes].every(c => c.checked);
+    selectAllCheckbox.checked = allChecked;
+  };
+
+  // Add "Select All" option
+  const selectAllLabel = document.createElement("label");
+  selectAllLabel.className = "chip";
+  const selectAllInput = document.createElement("input");
+  selectAllInput.type = "checkbox";
+  selectAllInput.id = "schedule-select-all-checkbox";
+  selectAllInput.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    dom.scheduleMembers.querySelectorAll('.schedule-member-checkbox').forEach(c => {
+      c.checked = isChecked;
+    });
+  });
+  const selectAllText = document.createElement("span");
+  selectAllText.textContent = "全選";
+  selectAllLabel.appendChild(selectAllInput);
+  selectAllLabel.appendChild(selectAllText);
+  dom.scheduleMembers.appendChild(selectAllLabel);
+
+  // Add member options
   state.members.forEach((m) => {
     const label = document.createElement("label");
     label.className = "chip";
     label.title = m.name; // Show name on hover
-    label.onclick = (e) => {
-      // Prevent checkbox from toggling when opening modal
-      if (e.target.tagName !== "INPUT") {
-        e.preventDefault();
-        openMemberDetailModal(m.id);
-      }
-    };
 
     const input = document.createElement("input");
     input.type = "checkbox";
     input.value = m.id;
+    input.classList.add('schedule-member-checkbox');
+    input.addEventListener('change', updateSelectAllState);
 
     const dot = document.createElement("div");
     dot.className = "member-dot small";

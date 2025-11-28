@@ -97,9 +97,6 @@ function cacheDom() {
   dom.expenseTitle = document.getElementById("expense-title");
   dom.expensePayer = document.getElementById("expense-payer");
   dom.expenseMembers = document.getElementById("expense-members");
-  dom.expenseList = document.getElementById("expense-list");
-  dom.balanceSummary = document.getElementById("balance-summary");
-  dom.pairwiseList = document.getElementById("pairwise-list");
   dom.scheduleForm = document.getElementById("schedule-form");
   dom.scheduleDate = document.getElementById("schedule-date");
   dom.scheduleTime = document.getElementById("schedule-time");
@@ -191,8 +188,6 @@ function initForms() {
     saveState();
     dom.expenseForm.reset();
     updateExpenseRate();
-    renderExpenses();
-    renderSettlement();
   });
 
   // 行程
@@ -234,8 +229,6 @@ function renderAll() {
   renderMemberDotPreview();
   renderMemberChipsForExpenses();
   renderMemberChipsForSchedule();
-  renderExpenses();
-  renderSettlement();
   renderSchedules();
 }
 
@@ -279,45 +272,47 @@ function handleAddMember(e) {
 }
 
 /* Member Detail Modal */
-function calculateMemberTotalExpenses(memberId) {
-  let total = 0;
-  state.expenses.forEach(e => {
-    if (e.memberIds.includes(memberId)) {
-      const share = (e.amount * e.rate) / e.memberIds.length;
-      total += share;
-    }
-  });
-  return total;
+function deleteMember(memberId) {
+  const member = findMember(memberId);
+  if (!member) return;
+
+  if (confirm(`確定要刪除成員「${member.name}」？此操作無法復原。`)) {
+    state.members = state.members.filter((x) => x.id !== memberId);
+    // Cascade delete
+    state.schedules.forEach((s) => s.memberIds = s.memberIds.filter((id) => id !== memberId));
+    state.expenses.forEach((e) => {
+      e.memberIds = e.memberIds.filter((id) => id !== memberId);
+      if (e.payerId === memberId) e.payerId = null;
+    });
+    
+    saveState();
+    closeMemberDetailModal();
+    renderAll();
+  }
 }
+
+document.addEventListener("keydown", (e) => {
+  if (dom.memberDetailModal.classList.contains("hidden")) return;
+
+  const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+  if (isInput) return;
+
+  if (e.key === "Delete" || e.key === "Backspace") {
+    e.preventDefault(); // Prevent browser back navigation on backspace
+    const memberId = dom.memberDetailModal.dataset.memberId;
+    if (memberId) {
+      deleteMember(memberId);
+    }
+  }
+});
 
 function openMemberDetailModal(memberId) {
   const member = findMember(memberId);
   if (!member) return;
 
-  const totalExpenses = calculateMemberTotalExpenses(memberId);
+  dom.memberDetailModal.dataset.memberId = memberId;
 
-  // Calculate personal settlement
-  const allBalances = computeBalances();
-  const creditors = allBalances.filter(b => b.balance > 0).map(b => ({ member: b.member, amount: Math.round(b.balance) }));
-  const debtors = allBalances.filter(b => b.balance < 0).map(b => ({ member: b.member, amount: -Math.round(b.balance) }));
-  const settlementLines = [];
-  let i = 0, j = 0;
-  while (i < debtors.length && j < creditors.length) {
-    const d = debtors[i];
-    const c = creditors[j];
-    const x = Math.min(d.amount, c.amount);
-    if (d.member.id === memberId) {
-      settlementLines.push(`需付給 ${c.member.name}：${x} TWD`);
-    }
-    if (c.member.id === memberId) {
-      settlementLines.push(`可從 ${d.member.name} 收取：${x} TWD`);
-    }
-    d.amount -= x;
-    c.amount -= x;
-    if (d.amount <= 1) i++; // Use a threshold to handle rounding issues
-    if (c.amount <= 1) j++;
-  }
-  const settlementHTML = settlementLines.length > 0 ? `<ul>${settlementLines.map(line => `<li>${line}</li>`).join('')}</ul>` : '<p>此成員目前帳務平衡。</p>';
+  const settlementHTML = '';
 
   dom.memberDetailContent.innerHTML = `
     <h3>
@@ -325,9 +320,6 @@ function openMemberDetailModal(memberId) {
       <span>${member.name}</span>
     </h3>
     ${member.note ? `<p class="member-note">${member.note}</p>` : ''}
-    <p><strong>個人總花費：</strong> ${Math.round(totalExpenses)} TWD</p>
-    <div><strong>個人結餘：</strong></div>
-    ${settlementHTML}
     <div class="demerit-counter">
       <span><strong>計點：</strong></span>
       <span class="demerit-count">${member.demerits}</span>
@@ -344,21 +336,7 @@ function openMemberDetailModal(memberId) {
     openMemberDetailModal(memberId); // Re-render
   };
 
-  document.getElementById("delete-member-btn").onclick = () => {
-    if (!confirm(`確定要刪除成員「${member.name}」？此操作無法復原。`)) return;
-    
-    state.members = state.members.filter((x) => x.id !== memberId);
-    // Cascade delete
-    state.schedules.forEach((s) => s.memberIds = s.memberIds.filter((id) => id !== memberId));
-    state.expenses.forEach((e) => {
-      e.memberIds = e.memberIds.filter((id) => id !== memberId);
-      if (e.payerId === memberId) e.payerId = null;
-    });
-    
-    saveState();
-    closeMemberDetailModal();
-    renderAll();
-  };
+  document.getElementById("delete-member-btn").onclick = () => deleteMember(memberId);
   
   dom.memberDetailModal.onclick = (e) => {
     if (e.target === dom.memberDetailModal) {
@@ -480,122 +458,6 @@ function renderMemberChipsForSchedule() {
     label.appendChild(dot);
     dom.scheduleMembers.appendChild(label);
   });
-}
-
-/* Expenses */
-
-function renderExpenses() {
-  dom.expenseList.innerHTML = "";
-  state.expenses.forEach((e) => {
-    const row = document.createElement("div");
-    row.className = "expense-row";
-
-    const main = document.createElement("div");
-    main.className = "expense-main";
-    const twd = e.amount * e.rate;
-    main.innerHTML = `
-      <strong>${e.title}</strong> · ${e.amount.toFixed(0)} ${e.currency}<br>
-      <span class="expense-meta">${e.date || "無日期"} · ≈ ${twd.toFixed(0)} TWD</span>
-    `;
-
-    row.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      if (!confirm(`刪除記帳「${e.title}」？`)) return;
-      state.expenses = state.expenses.filter((x) => x.id !== e.id);
-      saveState();
-      renderExpenses();
-      renderSettlement();
-    });
-
-    row.appendChild(main);
-    dom.expenseList.appendChild(row);
-  });
-}
-
-/* Settlement */
-
-function computeBalances() {
-  const balances = {};
-  state.members.forEach((m) => {
-    balances[m.id] = { member: m, balance: 0 };
-  });
-
-  state.expenses.forEach((e) => {
-    const total = e.amount * e.rate;
-    const ids = e.memberIds || [];
-    if (!ids.length) return;
-    const share = total / ids.length;
-
-    if (e.payerId && balances[e.payerId]) {
-      balances[e.payerId].balance += total;
-    } else if (!e.payerId) {
-      ids.forEach((id) => {
-        if (balances[id]) balances[id].balance += share;
-      });
-    }
-
-    ids.forEach((id) => {
-      if (balances[id]) balances[id].balance -= share;
-    });
-  });
-
-  return Object.values(balances);
-}
-
-function renderSettlement() {
-  const list = computeBalances();
-
-  dom.balanceSummary.innerHTML = "";
-  list.forEach((b) => {
-    const li = document.createElement("li");
-    li.className = "balance-item";
-    const amt = Math.round(b.balance);
-    const label = amt > 0 ? "應收" : amt < 0 ? "應付" : "平衡";
-    const cls = amt > 0 ? "positive" : amt < 0 ? "negative" : "";
-    li.innerHTML = `
-      <span>${b.member.name}</span>
-      <span class="balance-amount ${cls}">${amt} TWD ${label}</span>
-    `;
-    dom.balanceSummary.appendChild(li);
-  });
-
-  renderPairwise(list);
-}
-
-function renderPairwise(list) {
-  dom.pairwiseList.innerHTML = "";
-
-  const creditors = [];
-  const debtors = [];
-  list.forEach((b) => {
-    const amt = Math.round(b.balance);
-    if (amt > 0) creditors.push({ member: b.member, amount: amt });
-    if (amt < 0) debtors.push({ member: b.member, amount: -amt });
-  });
-
-  let i = 0, j = 0;
-  while (i < debtors.length && j < creditors.length) {
-    const d = debtors[i];
-    const c = creditors[j];
-    const x = Math.min(d.amount, c.amount);
-
-    const li = document.createElement("li");
-    li.className = "pairwise-item";
-    li.textContent = `${d.member.name} → ${c.member.name}：${x} TWD`;
-    dom.pairwiseList.appendChild(li);
-
-    d.amount -= x;
-    c.amount -= x;
-    if (d.amount <= 0) i++;
-    if (c.amount <= 0) j++;
-  }
-
-  if (!dom.pairwiseList.children.length) {
-    const li = document.createElement("li");
-    li.className = "pairwise-item";
-    li.textContent = "所有人的結餘已平衡，無需結算。";
-    dom.pairwiseList.appendChild(li);
-  }
 }
 
 /* Schedules + drag & drop */

@@ -782,43 +782,127 @@ function renderMemberDotPreview() {
 /* Member Chips */
 
 function renderPayerChips() {
+
   dom.expensePayer.innerHTML = "";
 
-  // Add "Common Payer" option
-  const commonLabel = document.createElement("label");
-  commonLabel.className = "chip";
-  commonLabel.title = "共同付款";
-  const commonInput = document.createElement("input");
-  commonInput.type = "radio";
-  commonInput.name = "payer";
-  commonInput.value = "";
-  commonInput.checked = true;
-  const commonText = document.createElement("span");
-  commonText.textContent = "共同";
-  commonLabel.appendChild(commonInput);
-  commonLabel.appendChild(commonText);
-  dom.expensePayer.appendChild(commonLabel);
+  // Removed "Common Payer" option as per user request.
+
+
 
   // Add member options
+
   state.members.forEach((m) => {
+
     const label = document.createElement("label");
+
     label.className = "chip";
+
     label.title = m.name;
 
+
+
     const input = document.createElement("input");
+
     input.type = "radio";
+
     input.name = "payer";
+
     input.value = m.id;
 
+    // Set first member as checked by default if no payer is selected
+
+    if (!state.expensePayerSelected && state.members.length > 0 && m.id === state.members[0].id) {
+
+        input.checked = true;
+
+    }
+
+
+
     const dot = document.createElement("div");
+
     dot.className = "member-dot small";
+
     dot.style.backgroundColor = m.colorHex;
+
     dot.textContent = m.short;
 
+
+
     label.appendChild(input);
+
     label.appendChild(dot);
+
     dom.expensePayer.appendChild(label);
+
   });
+
+
+
+  // Handle click events for payer chips to toggle 'active' class and check hidden radio
+
+  const allPayerChips = dom.expensePayer.querySelectorAll('.chip');
+
+  allPayerChips.forEach(chip => {
+
+    const input = chip.querySelector('input');
+
+    // Set active class initially based on checked state
+
+    if (input.checked) {
+
+      chip.classList.add('active');
+
+    }
+
+
+
+    chip.addEventListener('click', (e) => {
+
+      // If the actual input was clicked, let its default behavior handle it
+
+      if (e.target === input) {
+
+        return; 
+
+      }
+
+      
+
+      // Manually check the hidden radio button
+
+      input.checked = true; 
+
+
+
+      // Update active class for all chips in this group
+
+      allPayerChips.forEach(c => c.classList.remove('active'));
+
+      chip.classList.add('active');
+
+    });
+
+  });
+
+
+
+  // Ensure one payer is selected if members exist and none are
+
+  if (!dom.expensePayer.querySelector('input[name="payer"]:checked') && state.members.length > 0) {
+
+    const firstMemberInput = dom.expensePayer.querySelector('.chip input[name="payer"]');
+
+    if (firstMemberInput) {
+
+      firstMemberInput.checked = true;
+
+      firstMemberInput.closest('.chip').classList.add('active');
+
+    }
+
+  }
+
 }
 
 function renderSharedMemberChips() {
@@ -849,31 +933,53 @@ function renderSharedMemberChips() {
   selectAllText.textContent = "全選";
   selectAllLabel.appendChild(selectAllInput);
   selectAllLabel.appendChild(selectAllText);
-  dom.expenseMembers.appendChild(selectAllLabel);
-
-  // Add member options
-  state.members.forEach((m) => {
-    const label = document.createElement("label");
-    label.className = "chip";
-    label.title = m.name; // Show name on hover
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = m.id;
-    input.classList.add('member-checkbox');
-    input.addEventListener('change', updateSelectAllState);
-
-    const dot = document.createElement("div");
-    dot.className = "member-dot small";
-    dot.style.backgroundColor = m.colorHex;
-    dot.textContent = m.short;
-
-    label.appendChild(input);
-    label.appendChild(dot);
-    dom.expenseMembers.appendChild(label);
-  });
-}
-
+      dom.expenseMembers.appendChild(selectAllLabel);
+  
+      // Add member options
+      state.members.forEach((m) => {
+          const label = document.createElement("label");
+          label.className = "chip";
+          label.title = m.name; // Show name on hover
+  
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.value = m.id;
+          input.classList.add('member-checkbox');
+          input.addEventListener('change', updateSelectAllState); // Keep original listener
+  
+          const dot = document.createElement("div");
+          dot.className = "member-dot small";
+          dot.style.backgroundColor = m.colorHex;
+          dot.textContent = m.short;
+  
+          label.appendChild(input);
+          label.appendChild(dot);
+          dom.expenseMembers.appendChild(label);
+      });
+  
+      // Handle click events for member chips to toggle 'active' class and check hidden checkbox
+      const memberChips = dom.expenseMembers.querySelectorAll('.chip:not(:first-child)'); // Exclude 'Select All' chip
+      memberChips.forEach(chip => {
+          const input = chip.querySelector('input');
+          // Set active class initially based on checked state (if any were pre-selected)
+          if (input.checked) {
+              chip.classList.add('active');
+          }
+  
+          chip.addEventListener('click', (e) => {
+              // If the actual input or a child of input (like span for '全選') was clicked, let its own change event handle it
+              if (e.target === input || (e.target.tagName === 'SPAN' && e.target.parentElement === selectAllLabel)) {
+                  return;
+              }
+  
+              input.checked = !input.checked; // Toggle the hidden checkbox
+              chip.classList.toggle('active', input.checked); // Toggle active class visually
+              updateSelectAllState(); // Update 'Select All' after this change
+          });
+      });
+  
+      updateSelectAllState(); // Initial update for 'Select All'
+  }
 function renderMemberChipsForSchedule() {
   dom.scheduleMembers.innerHTML = "";
 
@@ -902,31 +1008,52 @@ function renderMemberChipsForSchedule() {
   selectAllText.textContent = "全選";
   selectAllLabel.appendChild(selectAllInput);
   selectAllLabel.appendChild(selectAllText);
-  dom.scheduleMembers.appendChild(selectAllLabel);
-
-  // Add member options
-  state.members.forEach((m) => {
-    const label = document.createElement("label");
-    label.className = "chip";
-    label.title = m.name; // Show name on hover
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = m.id;
-    input.classList.add('schedule-member-checkbox');
-    input.addEventListener('change', updateSelectAllState);
-
-    const dot = document.createElement("div");
-    dot.className = "member-dot small";
-    dot.style.backgroundColor = m.colorHex;
-    dot.textContent = m.short;
-
-    label.appendChild(input);
-    label.appendChild(dot);
-    dom.scheduleMembers.appendChild(label);
-  });
-}
-
+      dom.scheduleMembers.appendChild(selectAllLabel);
+  
+      // Add member options
+      state.members.forEach((m) => {
+          const label = document.createElement("label");
+          label.className = "chip";
+          label.title = m.name; // Show name on hover
+  
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.value = m.id;
+          input.classList.add('schedule-member-checkbox');
+          input.addEventListener('change', updateSelectAllState);
+  
+          const dot = document.createElement("div");
+          dot.className = "member-dot small";
+          dot.style.backgroundColor = m.colorHex;
+          dot.textContent = m.short;
+  
+          label.appendChild(input);
+          label.appendChild(dot);
+          dom.scheduleMembers.appendChild(label);
+      });
+  
+      // Handle click events for member chips to toggle 'active' class and check hidden checkbox
+      const memberChips = dom.scheduleMembers.querySelectorAll('.chip:not(:first-child)'); // Exclude 'Select All' chip
+      memberChips.forEach(chip => {
+          const input = chip.querySelector('input');
+          // Set active class initially based on checked state
+          if (input.checked) {
+              chip.classList.add('active');
+          }
+  
+          chip.addEventListener('click', (e) => {
+              if (e.target === input || (e.target.tagName === 'SPAN' && e.target.parentElement === selectAllLabel)) {
+                  return;
+              }
+  
+              input.checked = !input.checked; // Toggle the hidden checkbox
+              chip.classList.toggle('active', input.checked); // Toggle active class visually
+              updateSelectAllState(); // Update 'Select All' after this change
+          });
+      });
+  
+      updateSelectAllState(); // Initial update for 'Select All'
+  }
 /* Schedule Detail Modal */
 function closeScheduleDetailModal() {
   dom.scheduleDetailModal.classList.add("hidden");
@@ -954,6 +1081,24 @@ function renderMemberChipsForScheduleDetail(schedule) {
     label.appendChild(input);
     label.appendChild(dot);
     dom.scheduleDetailMembers.appendChild(label);
+  });
+
+  // Handle click events for member chips to toggle 'active' class and check hidden checkbox
+  const memberChips = dom.scheduleDetailMembers.querySelectorAll('.chip');
+  memberChips.forEach(chip => {
+    const input = chip.querySelector('input');
+    // Set active class initially based on checked state
+    if (input.checked) {
+      chip.classList.add('active');
+    }
+
+    chip.addEventListener('click', (e) => {
+      if (e.target === input) {
+        return;
+      }
+      input.checked = !input.checked; // Toggle the hidden checkbox
+      chip.classList.toggle('active', input.checked); // Toggle active class visually
+    });
   });
 }
 

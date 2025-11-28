@@ -41,8 +41,6 @@
 
         <!-- 左中：新增行程 -->
         <section class="panel panel-schedule-form" id="schedule-form-panel">
-          <h2 class="panel-title">新增行程</h2>
-
           <div class="card">
             <form id="schedule-form" class="form-grid">
               <div class="form-field">
@@ -50,6 +48,10 @@
               </div>
               <div class="form-field">
                 <input id="schedule-title" type="text" required placeholder="名稱/地點" />
+              </div>
+              <div class="form-field form-field-full">
+                <label>參與成員</label>
+                <div id="schedule-members" class="chip-group"></div>
               </div>
               <div class="form-actions form-field-full">
                 <button type="submit" class="btn primary">加入行程</button>
@@ -60,35 +62,33 @@
 
         <!-- 左下：記帳 + 結算 -->
         <section class="panel panel-expenses" id="expenses-panel">
-          <h2 class="panel-title">記帳與結算</h2>
-
           <!-- 新增記帳 -->
           <div class="card">
             <h3 class="card-title">新增記帳</h3>
             <form id="expense-form" class="form-grid">
               <div class="form-field">
-                <label for="expense-date">日期</label>
-                <input id="expense-date" type="date" />
+                <input id="expense-title" type="text" required placeholder="項目名稱" />
               </div>
               <div class="form-field">
-                <label for="expense-amount">金額</label>
-                <input id="expense-amount" type="number" min="0" step="0.01" required />
+                <input id="expense-category" type="text" placeholder="分類" />
               </div>
+
+              <div class="form-field">
+                <input id="expense-amount" type="number" min="0" step="0.01" required placeholder="金額" />
+              </div>
+              <div class="form-field">
+                <input id="expense-date" type="date" placeholder="日期" />
+              </div>
+
               <div class="form-field form-field-full">
-                <label>幣別與匯率</label>
                 <div id="currency-selector" class="currency-selector">
                   <!-- JS will populate this -->
                 </div>
               </div>
-              <div class="form-field">
-                <label for="expense-title">項目名稱</label>
-                <input id="expense-title" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="expense-payer">付款人</label>
-                <select id="expense-payer">
-                  <option value="">共同付款</option>
-                </select>
+              
+              <div class="form-field form-field-full">
+                <label>付款人</label>
+                <div id="expense-payer" class="chip-group"></div>
               </div>
               <div class="form-field form-field-full">
                 <label>分攤成員</label>
@@ -98,6 +98,12 @@
                 <button type="submit" class="btn primary">新增記帳</button>
               </div>
             </form>
+          </div>
+
+          <!-- 備忘錄 -->
+          <div class="card">
+            <h3 class="card-title">備忘錄</h3>
+            <textarea id="shared-memo" rows="4" style="width: 100%; font-size: 13px; border-radius: 8px; border: 1px solid var(--border); padding: 6px 8px;"></textarea>
           </div>
         </section>
       </section>

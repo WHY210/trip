@@ -12,9 +12,10 @@ function loadState() {
     const parsed = JSON.parse(raw);
     return {
       tripName: parsed.tripName || "我的旅行計畫",
-      members: parsed.members?.map(m => ({ ...m, demerits: m.demerits || 0 })) || [],
+      members: parsed.members?.map(m => ({ ...m, demerits: m.demerits || [] })) || [],
       schedules: parsed.schedules || [],
       expenses: parsed.expenses || [],
+      memo: parsed.memo || "",
       settings: {
         rateJPY: parsed.settings?.rateJPY ?? 0.22,
         rateKRW: parsed.settings?.rateKRW ?? 0.024
@@ -26,6 +27,7 @@ function loadState() {
       members: [],
       schedules: [],
       expenses: [],
+      memo: "",
       settings: {
         rateJPY: 0.22,
         rateKRW: 0.024
@@ -86,23 +88,22 @@ function cacheDom() {
 
   // Main UI
   dom.memberDotPreview = document.getElementById("member-dot-preview");
-  dom.rateJPY = document.getElementById("rate-jpy");
-  dom.rateKRW = document.getElementById("rate-krw");
-  dom.saveRates = document.getElementById("save-rates");
   dom.expenseForm = document.getElementById("expense-form");
   dom.expenseDate = document.getElementById("expense-date");
   dom.expenseAmount = document.getElementById("expense-amount");
   dom.expenseTitle = document.getElementById("expense-title");
+  dom.expenseCategory = document.getElementById("expense-category");
   dom.expensePayer = document.getElementById("expense-payer");
   dom.expenseMembers = document.getElementById("expense-members");
   dom.currencySelector = document.getElementById("currency-selector");
   dom.scheduleForm = document.getElementById("schedule-form");
   dom.scheduleDate = document.getElementById("schedule-date");
   dom.scheduleTitle = document.getElementById("schedule-title");
+  dom.scheduleMembers = document.getElementById("schedule-members");
   dom.scheduleList = document.getElementById("schedule-list");
   dom.leftColumn = document.getElementById("left-column");
-  // dom.splitter = document.getElementById("splitter"); // Removed
   dom.tripTitle = document.getElementById("trip-title");
+  dom.sharedMemo = document.getElementById("shared-memo");
 }
 
 /* Init forms */
@@ -127,6 +128,13 @@ function initForms() {
   // Currency Selector
   initCurrencySelector();
 
+  // Shared Memo
+  dom.sharedMemo.value = state.memo;
+  dom.sharedMemo.addEventListener("input", () => {
+    state.memo = dom.sharedMemo.value;
+    saveState();
+  });
+
   // Expense Form
   dom.expenseForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -148,8 +156,12 @@ function initForms() {
 
     const date = dom.expenseDate.value;
     const title = dom.expenseTitle.value.trim();
+    const category = dom.expenseCategory.value.trim();
     if (!title) return;
-    const payerId = dom.expensePayer.value || null;
+    
+    const payerInput = dom.expensePayer.querySelector('input[name="payer"]:checked');
+    const payerId = payerInput ? payerInput.value : null;
+
     const memberIds = Array.from(
       dom.expenseMembers.querySelectorAll("input[type=checkbox]:checked")
     ).map((i) => i.value);
@@ -165,6 +177,7 @@ function initForms() {
       currency,
       rate,
       title,
+      category,
       payerId,
       memberIds
     });
@@ -179,6 +192,9 @@ function initForms() {
     const date = dom.scheduleDate.value;
     const title = dom.scheduleTitle.value.trim();
     if (!date || !title) return;
+    const memberIds = Array.from(
+      dom.scheduleMembers.querySelectorAll("input[type=checkbox]:checked")
+    ).map((i) => i.value);
 
     state.schedules.push({
       id: genId("s"),
@@ -186,7 +202,7 @@ function initForms() {
       time: "",
       title,
       location: "",
-      memberIds: []
+      memberIds
     });
     saveState();
     dom.scheduleForm.reset();
@@ -241,123 +257,440 @@ function initCurrencySelector() {
 
 function renderAll() {
   renderMemberDotPreview();
-  renderMemberChipsForExpenses();
+  renderPayerChips();
+  renderSharedMemberChips();
   renderMemberChipsForSchedule();
   renderSchedules();
 }
 
 /* Member Modal */
+
 let selectedColor = null;
 
+
+
 function openMemberModal() {
+
   dom.modalMemberForm.reset();
+
   dom.memberModal.classList.remove("hidden");
+
 }
+
+
 
 function closeMemberModal() {
+
   dom.memberModal.classList.add("hidden");
+
 }
+
+
 
 function handleAddMember(e) {
+
   e.preventDefault();
+
   const name = dom.modalMemberName.value.trim();
+
   if (!name) {
+
     alert("請輸入姓名");
+
     return;
+
   }
+
+
 
   // Auto-assign color, with fallback
+
   const usedColors = new Set(state.members.map(m => m.colorHex));
+
   let newMemberColor = MORANDI_COLORS.find(c => !usedColors.has(c));
 
+
+
   if (!newMemberColor) {
+
     newMemberColor = "#808080"; // Default gray
+
     alert("預設顏色已用完，將使用灰色作為替代。");
+
   }
+
+
 
   const shortRaw = dom.modalMemberShort.value.trim();
+
   const short = shortRaw || (name[1] || name[0] || "?").slice(0, 2);
+
   const note = dom.modalMemberNote.value.trim();
 
-  state.members.push({ id: genId("m"), name, short, note, colorHex: newMemberColor, demerits: 0 });
+
+
+  state.members.push({ id: genId("m"), name, short, note, colorHex: newMemberColor, demerits: [] });
+
   saveState();
+
   closeMemberModal();
+
   renderAll();
+
 }
+
+
 
 /* Member Detail Modal */
-function deleteMember(memberId) {
-  const member = findMember(memberId);
-  if (!member) return;
 
-  if (confirm(`確定要刪除成員「${member.name}」？此操作無法復原。`)) {
-    state.members = state.members.filter((x) => x.id !== memberId);
-    // Cascade delete
-    state.schedules.forEach((s) => s.memberIds = s.memberIds.filter((id) => id !== memberId));
-    state.expenses.forEach((e) => {
-      e.memberIds = e.memberIds.filter((id) => id !== memberId);
-      if (e.payerId === memberId) e.payerId = null;
+
+
+function computeBalances() {
+
+  const balances = {};
+
+  state.members.forEach((m) => {
+
+    balances[m.id] = { member: m, balance: 0 };
+
+  });
+
+
+
+  state.expenses.forEach((e) => {
+
+    const total = e.amount * e.rate;
+
+    const ids = e.memberIds || [];
+
+    if (!ids.length) return;
+
+    const share = total / ids.length;
+
+
+
+    if (e.payerId && balances[e.payerId]) {
+
+      balances[e.payerId].balance += total;
+
+    } else if (!e.payerId) {
+
+      ids.forEach((id) => {
+
+        if (balances[id]) balances[id].balance += share;
+
+      });
+
+    }
+
+
+
+    ids.forEach((id) => {
+
+      if (balances[id]) balances[id].balance -= share;
+
     });
-    
-    saveState();
-    closeMemberDetailModal();
-    renderAll();
-  }
+
+  });
+
+
+
+  return Object.values(balances);
+
 }
 
+
+
+function calculateMemberTotalExpenses(memberId) {
+
+  let total = 0;
+
+  state.expenses.forEach(e => {
+
+    if (e.memberIds.includes(memberId)) {
+
+      const share = (e.amount * e.rate) / e.memberIds.length;
+
+      total += share;
+
+    }
+
+  });
+
+  return total;
+
+}
+
+
+
+function deleteMember(memberId) {
+
+  const member = findMember(memberId);
+
+  if (!member) return;
+
+
+
+  if (confirm(`確定要刪除成員「${member.name}」？此操作無法復原。`)) {
+
+    state.members = state.members.filter((x) => x.id !== memberId);
+
+    // Cascade delete
+
+    state.schedules.forEach((s) => s.memberIds = s.memberIds.filter((id) => id !== memberId));
+
+    state.expenses.forEach((e) => {
+
+      e.memberIds = e.memberIds.filter((id) => id !== memberId);
+
+      if (e.payerId === memberId) e.payerId = null;
+
+    });
+
+    
+
+    saveState();
+
+    closeMemberDetailModal();
+
+    renderAll();
+
+  }
+
+}
+
+
+
 document.addEventListener("keydown", (e) => {
+
   if (dom.memberDetailModal.classList.contains("hidden")) return;
 
+
+
   const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+
   if (isInput) return;
 
+
+
   if (e.key === "Delete" || e.key === "Backspace") {
+
     e.preventDefault(); // Prevent browser back navigation on backspace
+
     const memberId = dom.memberDetailModal.dataset.memberId;
+
     if (memberId) {
+
       deleteMember(memberId);
+
     }
+
   }
+
 });
 
+
+
 function openMemberDetailModal(memberId) {
+
   const member = findMember(memberId);
+
   if (!member) return;
+
+
 
   dom.memberDetailModal.dataset.memberId = memberId;
 
+
+
+  // Calculations
+
+  const totalExpenses = calculateMemberTotalExpenses(memberId);
+
+  const allBalances = computeBalances();
+
+  const creditors = allBalances.filter(b => b.balance > 0).map(b => ({ member: b.member, amount: Math.round(b.balance) }));
+
+  const debtors = allBalances.filter(b => b.balance < 0).map(b => ({ member: b.member, amount: -Math.round(b.balance) }));
+
+  
+
+  const settlementLines = [];
+
+  let i = 0, j = 0;
+
+  while (i < debtors.length && j < creditors.length) {
+
+    const d = { ...debtors[i] };
+
+    const c = { ...creditors[j] };
+
+    const x = Math.min(d.amount, c.amount);
+
+
+
+    if (d.member.id === memberId) {
+
+      settlementLines.push(`<li>需付給 <strong>${c.member.name}</strong>：${x} TWD</li>`);
+
+    }
+
+    if (c.member.id === memberId) {
+
+      settlementLines.push(`<li>可從 <strong>${d.member.name}</strong> 收取：${x} TWD</li>`);
+
+    }
+
+
+
+    debtors[i].amount -= x;
+
+    creditors[j].amount -= x;
+
+    if (debtors[i].amount < 1) i++;
+
+    if (creditors[j].amount < 1) j++;
+
+  }
+
+  const settlementHTML = settlementLines.length > 0 ? `<ul>${settlementLines.join('')}</ul>` : '<p>此成員目前帳務平衡。</p>';
+
+
+
+  const relatedExpenses = state.expenses.filter(e => e.payerId === memberId || e.memberIds.includes(memberId));
+
+  const expensesHTML = relatedExpenses.length > 0 ? `<ul>${relatedExpenses.map(e => {
+
+    const payerName = e.payerId ? (findMember(e.payerId)?.name || '未知') : '共同';
+
+    return `<li><strong>${e.title}</strong> (${Math.round(e.amount * e.rate)} TWD) - 由 ${payerName} 支付</li>`;
+
+  }).join('')}</ul>` : '<p>沒有相關的記帳項目。</p>';
+
+
+
+  const demeritHistoryHTML = member.demerits.length > 0 ? `<ul>${member.demerits.map(d => `<li>${d.reason}</li>`).join('')}</ul>` : '<p>沒有任何計點紀錄。</p>';
+
+
+
+  // Build the modal content
+
   dom.memberDetailContent.innerHTML = `
+
     <h3>
+
       <div class="member-dot" style="background-color:${member.colorHex};">${member.short}</div>
+
       <span>${member.name}</span>
+
     </h3>
+
     ${member.note ? `<p class="member-note">${member.note}</p>` : ''}
-    <div class="demerit-counter">
-      <span><strong>計點：</strong></span>
-      <span class="demerit-count">${member.demerits}</span>
-      <button id="add-demerit-btn" class="btn secondary">+</button>
+
+    
+
+    <div class="detail-section">
+
+      <h4>個人總花費</h4>
+
+      <p>${Math.round(totalExpenses)} TWD</p>
+
     </div>
+
+
+
+    <div class="detail-section">
+
+      <h4>結算詳情</h4>
+
+      ${settlementHTML}
+
+    </div>
+
+
+
+    <div class="detail-section">
+
+      <h4>搞事計點 (${member.demerits.length}點)</h4>
+
+      <div id="demerit-history">${demeritHistoryHTML}</div>
+
+      <div class="form-grid" style="margin-top: 8px;">
+
+        <input type="text" id="new-demerit-reason" placeholder="搞事事由" />
+
+        <button id="add-demerit-btn" class="btn secondary">新增計點</button>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="detail-section">
+
+      <h4>相關帳目</h4>
+
+      ${expensesHTML}
+
+    </div>
+
+
+
     <div class="form-actions" style="margin-top: 20px;">
+
       <button id="delete-member-btn" class="btn danger">刪除成員</button>
+
     </div>
+
   `;
 
+
+
+  // Event Listeners
+
   document.getElementById("add-demerit-btn").onclick = () => {
-    member.demerits += 1;
+
+    const reasonInput = document.getElementById("new-demerit-reason");
+
+    const reason = reasonInput.value.trim();
+
+    if (!reason) {
+
+      alert("請輸入事由");
+
+      return;
+
+    }
+
+    member.demerits.push({ id: genId('d'), reason });
+
     saveState();
-    // Just update the count, don't re-render the whole modal
-    dom.memberDetailContent.querySelector(".demerit-count").textContent = member.demerits;
+
+    openMemberDetailModal(memberId); // Re-render the modal
+
   };
+
+
 
   document.getElementById("delete-member-btn").addEventListener("click", () => deleteMember(memberId));
+
   
+
   dom.memberDetailModal.onclick = (e) => {
+
     if (e.target === dom.memberDetailModal) {
+
       closeMemberDetailModal();
+
     }
+
   };
 
+
+
   dom.memberDetailModal.classList.remove("hidden");
+
 }
 
 function closeMemberDetailModal() {
@@ -407,22 +740,82 @@ function renderMemberDotPreview() {
 
 /* Member Chips */
 
-function renderMemberChipsForExpenses() {
-  dom.expensePayer.innerHTML = `<option value="">共同付款</option>`;
-  state.members.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m.id;
-    opt.textContent = m.name;
-    dom.expensePayer.appendChild(opt);
-  });
+function renderPayerChips() {
+  dom.expensePayer.innerHTML = "";
 
+  // Add "Common Payer" option
+  const commonLabel = document.createElement("label");
+  commonLabel.className = "chip";
+  commonLabel.title = "共同付款";
+  const commonInput = document.createElement("input");
+  commonInput.type = "radio";
+  commonInput.name = "payer";
+  commonInput.value = "";
+  commonInput.checked = true;
+  const commonText = document.createElement("span");
+  commonText.textContent = "共同";
+  commonLabel.appendChild(commonInput);
+  commonLabel.appendChild(commonText);
+  dom.expensePayer.appendChild(commonLabel);
+
+  // Add member options
+  state.members.forEach((m) => {
+    const label = document.createElement("label");
+    label.className = "chip";
+    label.title = m.name;
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "payer";
+    input.value = m.id;
+
+    const dot = document.createElement("div");
+    dot.className = "member-dot small";
+    dot.style.backgroundColor = m.colorHex;
+    dot.textContent = m.short;
+
+    label.appendChild(input);
+    label.appendChild(dot);
+    dom.expensePayer.appendChild(label);
+  });
+}
+
+function renderSharedMemberChips() {
   dom.expenseMembers.innerHTML = "";
+
+  const updateSelectAllState = () => {
+    const memberCheckboxes = dom.expenseMembers.querySelectorAll('.member-checkbox');
+    const selectAllCheckbox = dom.expenseMembers.querySelector('#select-all-checkbox');
+    if (!selectAllCheckbox) return;
+    
+    const allChecked = [...memberCheckboxes].every(c => c.checked);
+    selectAllCheckbox.checked = allChecked;
+  };
+
+  // Add "Select All" option
+  const selectAllLabel = document.createElement("label");
+  selectAllLabel.className = "chip";
+  const selectAllInput = document.createElement("input");
+  selectAllInput.type = "checkbox";
+  selectAllInput.id = "select-all-checkbox";
+  selectAllInput.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    dom.expenseMembers.querySelectorAll('.member-checkbox').forEach(c => {
+      c.checked = isChecked;
+    });
+  });
+  const selectAllText = document.createElement("span");
+  selectAllText.textContent = "全選";
+  selectAllLabel.appendChild(selectAllInput);
+  selectAllLabel.appendChild(selectAllText);
+  dom.expenseMembers.appendChild(selectAllLabel);
+
+  // Add member options
   state.members.forEach((m) => {
     const label = document.createElement("label");
     label.className = "chip";
     label.title = m.name; // Show name on hover
     label.onclick = (e) => {
-      // Prevent checkbox from toggling when opening modal
       if (e.target.tagName !== "INPUT") {
         e.preventDefault();
         openMemberDetailModal(m.id);
@@ -432,6 +825,8 @@ function renderMemberChipsForExpenses() {
     const input = document.createElement("input");
     input.type = "checkbox";
     input.value = m.id;
+    input.classList.add('member-checkbox');
+    input.addEventListener('change', updateSelectAllState);
 
     const dot = document.createElement("div");
     dot.className = "member-dot small";

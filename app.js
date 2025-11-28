@@ -1,3 +1,4 @@
+console.log("app.js loaded");
 /* Trip Planner - New Build (split layout, localStorage, multi-currency) */
 
 const STORAGE_KEY = "trip_planner_new_state";
@@ -64,6 +65,7 @@ function formatDateLabel(dateStr) {
 const dom = {};
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOMContentLoaded event fired. Initializing app...");
   cacheDom();
   initForms();
   // initSplitter(); // Removed
@@ -75,6 +77,7 @@ function cacheDom() {
   dom.memberModal = document.getElementById("member-modal");
   dom.modalMemberForm = document.getElementById("modal-member-form");
   dom.modalMemberName = document.getElementById("modal-member-name");
+  dom.modalMemberShort = document.getElementById("modal-member-short");
   dom.modalMemberNote = document.getElementById("modal-member-note");
   dom.modalColorOptions = document.getElementById("modal-color-options");
   dom.modalCancelBtn = document.getElementById("modal-cancel-btn");
@@ -265,7 +268,8 @@ function handleAddMember(e) {
     alert("預設顏色已用完，將使用灰色作為替代。");
   }
 
-  const short = (name[1] || name[0] || "?").slice(0, 2);
+  const shortRaw = dom.modalMemberShort.value.trim();
+  const short = shortRaw || (name[1] || name[0] || "?").slice(0, 2);
   const note = dom.modalMemberNote.value.trim();
 
   state.members.push({ id: genId("m"), name, short, note, colorHex: newMemberColor, demerits: 0 });
@@ -425,6 +429,14 @@ function renderMemberChipsForExpenses() {
   state.members.forEach((m) => {
     const label = document.createElement("label");
     label.className = "chip";
+    label.title = m.name; // Show name on hover
+    label.onclick = (e) => {
+      // Prevent checkbox from toggling when opening modal
+      if (e.target.tagName !== "INPUT") {
+        e.preventDefault();
+        openMemberDetailModal(m.id);
+      }
+    };
 
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -435,12 +447,8 @@ function renderMemberChipsForExpenses() {
     dot.style.backgroundColor = m.colorHex;
     dot.textContent = m.short;
 
-    const span = document.createElement("span");
-    span.textContent = m.name;
-
     label.appendChild(input);
     label.appendChild(dot);
-    label.appendChild(span);
     dom.expenseMembers.appendChild(label);
   });
 }
@@ -450,6 +458,14 @@ function renderMemberChipsForSchedule() {
   state.members.forEach((m) => {
     const label = document.createElement("label");
     label.className = "chip";
+    label.title = m.name; // Show name on hover
+    label.onclick = (e) => {
+      // Prevent checkbox from toggling when opening modal
+      if (e.target.tagName !== "INPUT") {
+        e.preventDefault();
+        openMemberDetailModal(m.id);
+      }
+    };
 
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -460,12 +476,8 @@ function renderMemberChipsForSchedule() {
     dot.style.backgroundColor = m.colorHex;
     dot.textContent = m.short;
 
-    const span = document.createElement("span");
-    span.textContent = m.name;
-
     label.appendChild(input);
     label.appendChild(dot);
-    label.appendChild(span);
     dom.scheduleMembers.appendChild(label);
   });
 }

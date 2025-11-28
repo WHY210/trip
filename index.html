@@ -33,7 +33,7 @@
         <section class="panel panel-members" id="members-panel">
           <div class="card">
             <div class="members-header-flex">
-              <h2 class="panel-title">成員</h2>
+              <label>成員</label>
               <div id="member-dot-preview" class="member-dot-preview-container empty-hint"></div>
             </div>
           </div>
@@ -64,37 +64,39 @@
           <!-- 新增記帳 -->
           <div class="card">
             <form id="expense-form" class="form-grid">
+
               <div class="form-field">
                 <input id="expense-title" type="text" required placeholder="項目名稱" />
               </div>
-              <div class="form-field">
-                <input id="expense-category" type="text" placeholder="分類" />
-              </div>
-
+            
               <div class="form-field">
                 <input id="expense-amount" type="number" min="0" step="0.01" required placeholder="金額" />
               </div>
+            
               <div class="form-field">
                 <input id="expense-date" type="date" placeholder="日期" />
               </div>
-
+            
+              <div class="form-field">
+                <button type="submit" class="btn primary full-height">新增記帳</button>
+              </div>
+            
               <div class="form-field form-field-full">
                 <div id="currency-selector" class="currency-selector">
                   <!-- JS will populate this -->
                 </div>
               </div>
-              
-              <div class="form-field form-field-full">
-                <label>付款人</label>
+
+              <div class="form-field form-field-full form-field-inline">
+                <label>付款</label>
                 <div id="expense-payer" class="chip-group"></div>
               </div>
-              <div class="form-field form-field-full">
-                <label>分攤成員</label>
+            
+              <div class="form-field form-field-full form-field-inline">
+                <label>分攤</label>
                 <div id="expense-members" class="chip-group"></div>
               </div>
-              <div class="form-actions form-field-full">
-                <button type="submit" class="btn primary">新增記帳</button>
-              </div>
+            
             </form>
           </div>
 

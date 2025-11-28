@@ -66,22 +66,24 @@ const dom = {};
 document.addEventListener("DOMContentLoaded", () => {
   cacheDom();
   initForms();
-  initSplitter();
+  // initSplitter(); // Removed
   renderAll();
 });
 
 function cacheDom() {
-  dom.memberForm = document.getElementById("member-form");
-  dom.memberName = document.getElementById("member-name");
-  dom.memberShort = document.getElementById("member-short");
-  dom.memberColor = document.getElementById("member-color");
-  dom.memberNote = document.getElementById("member-note");
-  dom.memberList = document.getElementById("member-list");
+  // Modal elements
+  dom.memberModal = document.getElementById("member-modal");
+  dom.modalMemberForm = document.getElementById("modal-member-form");
+  dom.modalMemberName = document.getElementById("modal-member-name");
+  dom.modalMemberNote = document.getElementById("modal-member-note");
+  dom.modalColorOptions = document.getElementById("modal-color-options");
+  dom.modalCancelBtn = document.getElementById("modal-cancel-btn");
 
+  // Main UI
+  dom.memberDotPreview = document.getElementById("member-dot-preview");
   dom.rateJPY = document.getElementById("rate-jpy");
   dom.rateKRW = document.getElementById("rate-krw");
   dom.saveRates = document.getElementById("save-rates");
-
   dom.expenseForm = document.getElementById("expense-form");
   dom.expenseDate = document.getElementById("expense-date");
   dom.expenseAmount = document.getElementById("expense-amount");
@@ -93,7 +95,6 @@ function cacheDom() {
   dom.expenseList = document.getElementById("expense-list");
   dom.balanceSummary = document.getElementById("balance-summary");
   dom.pairwiseList = document.getElementById("pairwise-list");
-
   dom.scheduleForm = document.getElementById("schedule-form");
   dom.scheduleDate = document.getElementById("schedule-date");
   dom.scheduleTime = document.getElementById("schedule-time");
@@ -101,9 +102,8 @@ function cacheDom() {
   dom.scheduleLocation = document.getElementById("schedule-location");
   dom.scheduleMembers = document.getElementById("schedule-members");
   dom.scheduleList = document.getElementById("schedule-list");
-
   dom.leftColumn = document.getElementById("left-column");
-  dom.splitter = document.getElementById("splitter");
+  // dom.splitter = document.getElementById("splitter"); // Removed
   dom.tripTitle = document.getElementById("trip-title");
 }
 
@@ -124,31 +124,11 @@ function initForms() {
     }
   });
 
-  // 顏色選單
-  MORANDI_COLORS.forEach((hex, i) => {
-    const opt = document.createElement("option");
-    opt.value = hex;
-    opt.textContent = `Color ${i + 1} (${hex})`;
-    dom.memberColor.appendChild(opt);
-  });
+  // New member modal logic
+  dom.modalMemberForm.addEventListener("submit", handleAddMember);
+  dom.modalCancelBtn.addEventListener("click", closeMemberModal);
 
-  // 成員
-  dom.memberForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = dom.memberName.value.trim();
-    const shortRaw = dom.memberShort.value.trim();
-    if (!name) return;
-    const short = (shortRaw || name[0] || "?").slice(0, 2);
-    const note = dom.memberNote.value.trim();
-    const colorHex =
-      dom.memberColor.value ||
-      MORANDI_COLORS[state.members.length % MORANDI_COLORS.length];
-
-    state.members.push({ id: genId("m"), name, short, note, colorHex });
-    saveState();
-    dom.memberForm.reset();
-    renderAll();
-  });
+  // --- Old member form logic removed ---
 
   // 匯率初始
   dom.rateJPY.value = state.settings.rateJPY;
@@ -246,7 +226,7 @@ function updateExpenseRate() {
 /* Render all */
 
 function renderAll() {
-  renderMembers();
+  renderMemberDotPreview();
   renderMemberChipsForExpenses();
   renderMemberChipsForSchedule();
   renderExpenses();
@@ -254,55 +234,87 @@ function renderAll() {
   renderSchedules();
 }
 
-/* Members */
+/* Member Modal */
+let selectedColor = null;
 
-function renderMembers() {
-  dom.memberList.innerHTML = "";
-  state.members.forEach((m) => {
-    const row = document.createElement("div");
-    row.className = "member-row";
+function openMemberModal() {
+  dom.modalMemberForm.reset();
+  dom.memberModal.classList.remove("hidden");
+}
 
-    const left = document.createElement("div");
-    left.style.display = "flex";
-    left.style.alignItems = "center";
+function closeMemberModal() {
+  dom.memberModal.classList.add("hidden");
+}
 
+function handleAddMember(e) {
+  e.preventDefault();
+  const name = dom.modalMemberName.value.trim();
+  if (!name) {
+    alert("請輸入姓名");
+    return;
+  }
+
+  // Auto-assign color
+  const usedColors = new Set(state.members.map(m => m.colorHex));
+  const firstAvailable = MORANDI_COLORS.find(c => !usedColors.has(c));
+
+  if (!firstAvailable) {
+    alert("沒有可用的顏色了！");
+    return;
+  }
+
+  const short = (name[1] || name[0] || "?").slice(0, 2);
+  const note = dom.modalMemberNote.value.trim();
+
+  state.members.push({ id: genId("m"), name, short, note, colorHex: firstAvailable });
+  saveState();
+  closeMemberModal();
+  renderAll();
+}
+
+/* Colors & Member Preview */
+function renderColorOptions() {
+  // This function is now obsolete. The logic is inside openMemberModal.
+}
+
+function renderMemberDotPreview() {
+  dom.memberDotPreview.innerHTML = "";
+  
+  state.members.forEach(m => {
     const dot = document.createElement("div");
     dot.className = "member-dot";
     dot.style.backgroundColor = m.colorHex;
     dot.textContent = m.short;
+    dot.title = m.name;
+    dot.style.cursor = 'context-menu';
 
-    const info = document.createElement("div");
-    info.className = "member-info";
-    info.innerHTML = `
-      <div>${m.name}</div>
-      <div class="member-meta">${m.short}${m.note ? " · " + m.note : ""}</div>
-    `;
-
-    left.appendChild(dot);
-    left.appendChild(info);
-
-    const del = document.createElement("button");
-    del.className = "btn danger";
-    del.textContent = "刪除";
-    del.onclick = () => {
+    dot.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
       if (!confirm(`刪除成員「${m.name}」？`)) return;
       state.members = state.members.filter((x) => x.id !== m.id);
-      state.schedules.forEach((s) => {
-        s.memberIds = s.memberIds.filter((id) => id !== m.id);
-      });
+      // Cascade delete logic
+      state.schedules.forEach((s) => s.memberIds = s.memberIds.filter((id) => id !== m.id));
       state.expenses.forEach((e) => {
         e.memberIds = e.memberIds.filter((id) => id !== m.id);
         if (e.payerId === m.id) e.payerId = null;
       });
       saveState();
       renderAll();
-    };
+    });
 
-    row.appendChild(left);
-    row.appendChild(del);
-    dom.memberList.appendChild(row);
+    dom.memberDotPreview.appendChild(dot);
   });
+
+  // Add the "+" button
+  const addButton = document.createElement("button");
+  addButton.className = "add-member-btn";
+  addButton.textContent = "+";
+  addButton.onclick = openMemberModal;
+  dom.memberDotPreview.appendChild(addButton);
 }
+
+
+/* Member Chips */
 
 function renderMemberChipsForExpenses() {
   dom.expensePayer.innerHTML = `<option value="">共同付款</option>`;
@@ -378,19 +390,16 @@ function renderExpenses() {
       <span class="expense-meta">${e.date || "無日期"} · ≈ ${twd.toFixed(0)} TWD</span>
     `;
 
-    const del = document.createElement("button");
-    del.className = "btn danger";
-    del.textContent = "刪除";
-    del.onclick = () => {
+    row.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
       if (!confirm(`刪除記帳「${e.title}」？`)) return;
       state.expenses = state.expenses.filter((x) => x.id !== e.id);
       saveState();
       renderExpenses();
       renderSettlement();
-    };
+    });
 
     row.appendChild(main);
-    row.appendChild(del);
     dom.expenseList.appendChild(row);
   });
 }
@@ -532,18 +541,32 @@ function renderSchedules() {
           <span style="font-size:11px;color:#6b7280;">${s.location || ""}</span>
         `;
 
-        const del = document.createElement("button");
-        del.className = "btn danger";
-        del.textContent = "刪除";
-        del.onclick = () => {
+        const memberDotsContainer = document.createElement("div");
+        memberDotsContainer.className = "schedule-item-members";
+        s.memberIds.forEach(memberId => {
+          const member = findMember(memberId);
+          if (member) {
+            const dot = document.createElement("div");
+            dot.className = "member-dot small";
+            dot.style.backgroundColor = member.colorHex;
+            dot.textContent = member.short;
+            dot.title = member.name; // Tooltip with full name
+            memberDotsContainer.appendChild(dot);
+          }
+        });
+        if(s.memberIds.length > 0) {
+          left.appendChild(memberDotsContainer);
+        }
+
+        item.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
           if (!confirm(`刪除行程「${s.title}」？`)) return;
           state.schedules = state.schedules.filter((x) => x.id !== s.id);
           saveState();
           renderSchedules();
-        };
+        });
 
         item.appendChild(left);
-        item.appendChild(del);
 
         item.addEventListener("dragstart", handleScheduleDragStart);
         item.addEventListener("dragover", handleScheduleDragOver);
@@ -607,32 +630,4 @@ function handleScheduleDragEnd(e) {
 
 /* Splitter */
 
-function initSplitter() {
-  const leftColumn = dom.leftColumn;
-  const splitter = dom.splitter;
-  let dragging = false;
-
-  splitter.addEventListener("mousedown", () => {
-    dragging = true;
-    document.body.style.cursor = "row-resize";
-  });
-
-  document.addEventListener("mouseup", () => {
-    if (!dragging) return;
-    dragging = false;
-    document.body.style.cursor = "";
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
-    const rect = leftColumn.getBoundingClientRect();
-    let y = e.clientY - rect.top;
-
-    const minTop = 140;
-    const minBottom = 180;
-    if (y < minTop) y = minTop;
-    if (y > rect.height - minBottom) y = rect.height - minBottom;
-
-    leftColumn.style.gridTemplateRows = `${y}px 6px 1fr`;
-  });
-}
+// The entire initSplitter function has been removed as it's obsolete.

@@ -32,35 +32,8 @@
         <!-- 左上：成員（只一排圓點） -->
         <section class="panel panel-members" id="members-panel">
           <h2 class="panel-title">成員</h2>
-
           <div class="card">
-            <h3 class="card-title">新增成員</h3>
-            <form id="member-form" class="form-grid member-form-grid">
-              <div class="form-field">
-                <label for="member-name">姓名</label>
-                <input id="member-name" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="member-short">縮寫</label>
-                <input id="member-short" type="text" maxlength="2" required />
-              </div>
-              <div class="form-field">
-                <label for="member-color">顏色（莫蘭迪）</label>
-                <select id="member-color">
-                  <option value="">自動指派</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="member-note">備註</label>
-                <input id="member-note" type="text" />
-              </div>
-              <div class="form-actions form-field-full">
-                <button type="submit" class="btn primary">新增成員</button>
-              </div>
-            </form>
-
-            <!-- 成員列表 -->
-            <div id="member-list" class="member-list empty-hint"></div>
+            <div id="member-dot-preview" class="member-dot-preview-container empty-hint"></div>
           </div>
         </section>
 
@@ -200,5 +173,26 @@
       navigator.serviceWorker.register("./service-worker.js").catch(console.error);
     }
   </script>
+
+  <!-- Member Modal -->
+  <div id="member-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="modal-title">新增成員</h3>
+      <form id="modal-member-form">
+        <div class="form-field">
+          <label for="modal-member-name">姓名</label>
+          <input id="modal-member-name" type="text" required />
+        </div>
+        <div class="form-field">
+          <label for="modal-member-note">備註</label>
+          <input id="modal-member-note" type="text" />
+        </div>
+        <div class="form-actions">
+          <button type="button" id="modal-cancel-btn" class="btn secondary">取消</button>
+          <button type="submit" class="btn primary">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

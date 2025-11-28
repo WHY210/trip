@@ -11,7 +11,7 @@ function loadState() {
     const parsed = JSON.parse(raw);
     return {
       tripName: parsed.tripName || "我的旅行計畫",
-      members: parsed.members || [],
+      members: parsed.members?.map(m => ({ ...m, demerits: m.demerits || 0 })) || [],
       schedules: parsed.schedules || [],
       expenses: parsed.expenses || [],
       settings: {
@@ -78,6 +78,8 @@ function cacheDom() {
   dom.modalMemberNote = document.getElementById("modal-member-note");
   dom.modalColorOptions = document.getElementById("modal-color-options");
   dom.modalCancelBtn = document.getElementById("modal-cancel-btn");
+  dom.memberDetailModal = document.getElementById("member-detail-modal");
+  dom.memberDetailContent = document.getElementById("member-detail-content");
 
   // Main UI
   dom.memberDotPreview = document.getElementById("member-dot-preview");
@@ -254,29 +256,121 @@ function handleAddMember(e) {
     return;
   }
 
-  // Auto-assign color
+  // Auto-assign color, with fallback
   const usedColors = new Set(state.members.map(m => m.colorHex));
-  const firstAvailable = MORANDI_COLORS.find(c => !usedColors.has(c));
+  let newMemberColor = MORANDI_COLORS.find(c => !usedColors.has(c));
 
-  if (!firstAvailable) {
-    alert("沒有可用的顏色了！");
-    return;
+  if (!newMemberColor) {
+    newMemberColor = "#808080"; // Default gray
+    alert("預設顏色已用完，將使用灰色作為替代。");
   }
 
   const short = (name[1] || name[0] || "?").slice(0, 2);
   const note = dom.modalMemberNote.value.trim();
 
-  state.members.push({ id: genId("m"), name, short, note, colorHex: firstAvailable });
+  state.members.push({ id: genId("m"), name, short, note, colorHex: newMemberColor, demerits: 0 });
   saveState();
   closeMemberModal();
   renderAll();
 }
 
-/* Colors & Member Preview */
-function renderColorOptions() {
-  // This function is now obsolete. The logic is inside openMemberModal.
+/* Member Detail Modal */
+function calculateMemberTotalExpenses(memberId) {
+  let total = 0;
+  state.expenses.forEach(e => {
+    if (e.memberIds.includes(memberId)) {
+      const share = (e.amount * e.rate) / e.memberIds.length;
+      total += share;
+    }
+  });
+  return total;
 }
 
+function openMemberDetailModal(memberId) {
+  const member = findMember(memberId);
+  if (!member) return;
+
+  const totalExpenses = calculateMemberTotalExpenses(memberId);
+
+  // Calculate personal settlement
+  const allBalances = computeBalances();
+  const creditors = allBalances.filter(b => b.balance > 0).map(b => ({ member: b.member, amount: Math.round(b.balance) }));
+  const debtors = allBalances.filter(b => b.balance < 0).map(b => ({ member: b.member, amount: -Math.round(b.balance) }));
+  const settlementLines = [];
+  let i = 0, j = 0;
+  while (i < debtors.length && j < creditors.length) {
+    const d = debtors[i];
+    const c = creditors[j];
+    const x = Math.min(d.amount, c.amount);
+    if (d.member.id === memberId) {
+      settlementLines.push(`需付給 ${c.member.name}：${x} TWD`);
+    }
+    if (c.member.id === memberId) {
+      settlementLines.push(`可從 ${d.member.name} 收取：${x} TWD`);
+    }
+    d.amount -= x;
+    c.amount -= x;
+    if (d.amount <= 1) i++; // Use a threshold to handle rounding issues
+    if (c.amount <= 1) j++;
+  }
+  const settlementHTML = settlementLines.length > 0 ? `<ul>${settlementLines.map(line => `<li>${line}</li>`).join('')}</ul>` : '<p>此成員目前帳務平衡。</p>';
+
+  dom.memberDetailContent.innerHTML = `
+    <h3>
+      <div class="member-dot" style="background-color:${member.colorHex};">${member.short}</div>
+      <span>${member.name}</span>
+    </h3>
+    ${member.note ? `<p class="member-note">${member.note}</p>` : ''}
+    <p><strong>個人總花費：</strong> ${Math.round(totalExpenses)} TWD</p>
+    <div><strong>個人結餘：</strong></div>
+    ${settlementHTML}
+    <div class="demerit-counter">
+      <span><strong>計點：</strong></span>
+      <span class="demerit-count">${member.demerits}</span>
+      <button id="add-demerit-btn" class="btn secondary">+</button>
+    </div>
+    <div class="form-actions" style="margin-top: 20px;">
+      <button id="delete-member-btn" class="btn danger">刪除成員</button>
+    </div>
+  `;
+
+  document.getElementById("add-demerit-btn").onclick = () => {
+    member.demerits += 1;
+    saveState();
+    openMemberDetailModal(memberId); // Re-render
+  };
+
+  document.getElementById("delete-member-btn").onclick = () => {
+    if (!confirm(`確定要刪除成員「${member.name}」？此操作無法復原。`)) return;
+    
+    state.members = state.members.filter((x) => x.id !== memberId);
+    // Cascade delete
+    state.schedules.forEach((s) => s.memberIds = s.memberIds.filter((id) => id !== memberId));
+    state.expenses.forEach((e) => {
+      e.memberIds = e.memberIds.filter((id) => id !== memberId);
+      if (e.payerId === memberId) e.payerId = null;
+    });
+    
+    saveState();
+    closeMemberDetailModal();
+    renderAll();
+  };
+  
+  dom.memberDetailModal.onclick = (e) => {
+    if (e.target === dom.memberDetailModal) {
+      closeMemberDetailModal();
+    }
+  };
+
+  dom.memberDetailModal.classList.remove("hidden");
+}
+
+function closeMemberDetailModal() {
+  dom.memberDetailModal.classList.add("hidden");
+}
+
+
+/* Member Preview */
 function renderMemberDotPreview() {
   dom.memberDotPreview.innerHTML = "";
   
@@ -286,7 +380,9 @@ function renderMemberDotPreview() {
     dot.style.backgroundColor = m.colorHex;
     dot.textContent = m.short;
     dot.title = m.name;
-    dot.style.cursor = 'context-menu';
+    dot.style.cursor = 'pointer';
+
+    dot.onclick = () => openMemberDetailModal(m.id);
 
     dot.addEventListener("contextmenu", (e) => {
       e.preventDefault();

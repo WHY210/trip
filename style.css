@@ -116,6 +116,17 @@
     font-size: 15px;
     font-weight: 600;
   }
+
+  .members-header-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .members-header-flex .panel-title {
+    margin: 0;
+    flex-shrink: 0; /* Prevent title from shrinking */
+  }
   
   .card {
     background: var(--bg-alt);
@@ -225,6 +236,11 @@
   .btn.secondary {
     background: #e5e7eb;
     color: #111827;
+  }
+
+  .btn.danger {
+    background: #fee2e2;
+    color: #dc2626;
   }
   
   /* 成員圓點列（左上只一排） */
@@ -460,6 +476,34 @@
   }
   .add-member-btn:hover {
     background-color: #d1d5db;
+  }
+
+  /* Member Detail Modal */
+  #member-detail-content h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #member-detail-content ul {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  #member-detail-content .member-note {
+    font-size: 14px;
+    color: var(--text-subtle);
+    margin-top: -8px;
+    margin-bottom: 16px;
+  }
+  .demerit-counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .demerit-count {
+    font-size: 20px;
+    font-weight: bold;
   }
   
   /* 無資料提示 */

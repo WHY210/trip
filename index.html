@@ -31,9 +31,11 @@
       <section class="left-column" id="left-column">
         <!-- 左上：成員（只一排圓點） -->
         <section class="panel panel-members" id="members-panel">
-          <h2 class="panel-title">成員</h2>
           <div class="card">
-            <div id="member-dot-preview" class="member-dot-preview-container empty-hint"></div>
+            <div class="members-header-flex">
+              <h2 class="panel-title">成員</h2>
+              <div id="member-dot-preview" class="member-dot-preview-container empty-hint"></div>
+            </div>
           </div>
         </section>
 
@@ -192,6 +194,15 @@
           <button type="submit" class="btn primary">儲存</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Member Detail Modal -->
+  <div id="member-detail-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div id="member-detail-content">
+        <!-- Content will be populated by JS -->
+      </div>
     </div>
   </div>
 </body>

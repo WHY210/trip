@@ -60,6 +60,16 @@
     color: var(--text-subtle);
   }
   
+  .trip-title-input {
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: 100%;
+    outline: none;
+  }
+  
   .emoji {
     font-size: 22px;
   }

@@ -10,6 +10,7 @@ function loadState() {
     if (!raw) throw new Error();
     const parsed = JSON.parse(raw);
     return {
+      tripName: parsed.tripName || "我的旅行計畫",
       members: parsed.members || [],
       schedules: parsed.schedules || [],
       expenses: parsed.expenses || [],
@@ -20,6 +21,7 @@ function loadState() {
     };
   } catch {
     return {
+      tripName: "我的旅行計畫",
       members: [],
       schedules: [],
       expenses: [],
@@ -102,11 +104,26 @@ function cacheDom() {
 
   dom.leftColumn = document.getElementById("left-column");
   dom.splitter = document.getElementById("splitter");
+  dom.tripTitle = document.getElementById("trip-title");
 }
 
 /* Init forms */
 
 function initForms() {
+  // Trip Title
+  dom.tripTitle.value = state.tripName;
+  dom.tripTitle.addEventListener("change", () => {
+    const newName = dom.tripTitle.value.trim();
+    if (newName) {
+      state.tripName = newName;
+      saveState();
+      // Maybe show a small "saved" confirmation? For now, just save.
+    } else {
+      // Restore previous name if input is empty
+      dom.tripTitle.value = state.tripName;
+    }
+  });
+
   // 顏色選單
   MORANDI_COLORS.forEach((hex, i) => {
     const opt = document.createElement("option");

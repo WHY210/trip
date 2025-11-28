@@ -78,7 +78,7 @@
   .layout {
     flex: 1 1 auto;
     display: grid;
-    grid-template-columns: 380px 1fr;   /* 左固定寬度，右自適應 */
+    grid-template-columns: 480px 1fr;   /* 左固定寬度，右自適應 */
     height: 100%;
     overflow: hidden;
   }
@@ -590,25 +590,81 @@
 }
 
 .currency-option input:focus {
+
   outline: none;
+
 }
+
   
+
 /* Member Detail Modal Additions */
+
 .detail-section {
+
   margin-top: 16px;
+
 }
+
 .detail-section h4 {
+
   font-size: 14px;
+
   font-weight: 600;
+
   margin: 0 0 4px;
+
   border-bottom: 1px solid var(--border);
+
   padding-bottom: 4px;
+
 }
+
 .detail-section p,
+
 .detail-section ul {
+
   margin: 0;
+
   font-size: 13px;
+
 }
+
 .detail-section ul {
+
   padding-left: 20px;
+
+}
+
+
+
+/* Modal Close Button */
+
+.close-btn {
+
+  position: absolute;
+
+  top: 10px;
+
+  right: 10px;
+
+  border: none;
+
+  background: transparent;
+
+  font-size: 24px;
+
+  line-height: 1;
+
+  color: #000;
+
+  opacity: 0.2;
+
+  cursor: pointer;
+
+}
+
+.close-btn:hover {
+
+  opacity: 0.5;
+
 }

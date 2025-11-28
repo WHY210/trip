@@ -104,6 +104,17 @@ function cacheDom() {
   dom.leftColumn = document.getElementById("left-column");
   dom.tripTitle = document.getElementById("trip-title");
   dom.sharedMemo = document.getElementById("shared-memo");
+
+  // Schedule Detail Modal
+  dom.scheduleDetailModal = document.getElementById("schedule-detail-modal");
+  dom.scheduleDetailContent = document.getElementById("schedule-detail-content");
+  dom.scheduleDetailTitle = document.getElementById("schedule-detail-title");
+  dom.scheduleDetailMembers = document.getElementById("schedule-detail-members");
+  dom.scheduleDetailDetails = document.getElementById("schedule-detail-details");
+  dom.scheduleDetailMapLink = document.getElementById("schedule-detail-map-link");
+  dom.scheduleMapLinkPreview = document.getElementById("schedule-map-link-preview");
+  dom.scheduleDetailDeleteBtn = document.getElementById("schedule-detail-delete-btn");
+  dom.scheduleDetailSaveBtn = document.getElementById("schedule-detail-save-btn");
 }
 
 /* Init forms */
@@ -202,6 +213,8 @@ function initForms() {
       time: "",
       title,
       location: "",
+      details: "",
+      mapLink: "",
       memberIds
     });
     saveState();
@@ -271,9 +284,19 @@ let selectedColor = null;
 
 function openMemberModal() {
 
+
+
   dom.modalMemberForm.reset();
 
+
+
   dom.memberModal.classList.remove("hidden");
+
+
+
+  dom.memberModal.querySelector('.close-btn').onclick = closeMemberModal;
+
+
 
 }
 
@@ -677,21 +700,39 @@ function openMemberDetailModal(memberId) {
 
   
 
-  dom.memberDetailModal.onclick = (e) => {
+    dom.memberDetailModal.onclick = (e) => {
 
-    if (e.target === dom.memberDetailModal) {
+  
 
-      closeMemberDetailModal();
+      if (e.target === dom.memberDetailModal) {
 
-    }
+  
 
-  };
+        closeMemberDetailModal();
 
+  
 
+      }
 
-  dom.memberDetailModal.classList.remove("hidden");
+  
 
-}
+    };
+
+  
+
+  
+
+  
+
+    dom.memberDetailModal.querySelector('.close-btn').onclick = closeMemberDetailModal;
+
+  
+
+    dom.memberDetailModal.classList.remove("hidden");
+
+  
+
+  }
 
 function closeMemberDetailModal() {
   dom.memberDetailModal.classList.add("hidden");
@@ -886,6 +927,94 @@ function renderMemberChipsForSchedule() {
   });
 }
 
+/* Schedule Detail Modal */
+function closeScheduleDetailModal() {
+  dom.scheduleDetailModal.classList.add("hidden");
+}
+
+function renderMemberChipsForScheduleDetail(schedule) {
+  dom.scheduleDetailMembers.innerHTML = "";
+  state.members.forEach((m) => {
+    const label = document.createElement("label");
+    label.className = "chip";
+    label.title = m.name;
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = m.id;
+    if (schedule.memberIds.includes(m.id)) {
+      input.checked = true;
+    }
+
+    const dot = document.createElement("div");
+    dot.className = "member-dot small";
+    dot.style.backgroundColor = m.colorHex;
+    dot.textContent = m.short;
+
+    label.appendChild(input);
+    label.appendChild(dot);
+    dom.scheduleDetailMembers.appendChild(label);
+  });
+}
+
+function openScheduleDetailModal(scheduleId) {
+  const schedule = state.schedules.find(s => s.id === scheduleId);
+  if (!schedule) return;
+
+  // Populate modal
+  dom.scheduleDetailTitle.value = schedule.title;
+  dom.scheduleDetailDetails.value = schedule.details || "";
+  dom.scheduleDetailMapLink.value = schedule.mapLink || "";
+  
+  if (schedule.mapLink) {
+    dom.scheduleMapLinkPreview.innerHTML = `<a href="${schedule.mapLink}" target="_blank">在地圖上查看</a>`;
+  } else {
+    dom.scheduleMapLinkPreview.innerHTML = "";
+  }
+
+  renderMemberChipsForScheduleDetail(schedule);
+
+  // Setup event listeners
+  dom.scheduleDetailModal.querySelector('.close-btn').onclick = closeScheduleDetailModal;
+  dom.scheduleDetailModal.onclick = (e) => {
+    if (e.target === dom.scheduleDetailModal) {
+      closeScheduleDetailModal();
+    }
+  };
+
+  dom.scheduleDetailSaveBtn.onclick = () => {
+    // Collect new data
+    schedule.title = dom.scheduleDetailTitle.value.trim();
+    schedule.details = dom.scheduleDetailDetails.value.trim();
+    schedule.mapLink = dom.scheduleDetailMapLink.value.trim();
+    schedule.memberIds = Array.from(
+      dom.scheduleDetailMembers.querySelectorAll("input[type=checkbox]:checked")
+    ).map((i) => i.value);
+
+    if (!schedule.title) {
+      alert("名稱不可為空");
+      return;
+    }
+
+    saveState();
+    closeScheduleDetailModal();
+    renderSchedules();
+  };
+
+  dom.scheduleDetailDeleteBtn.onclick = () => {
+    if (confirm(`確定要刪除行程「${schedule.title}」？`)) {
+      state.schedules = state.schedules.filter(s => s.id !== scheduleId);
+      saveState();
+      closeScheduleDetailModal();
+      renderSchedules();
+    }
+  };
+
+  // Show modal
+  dom.scheduleDetailModal.classList.remove("hidden");
+}
+
+
 /* Schedules + drag & drop */
 
 const collapsedDates = new Set();
@@ -954,12 +1083,28 @@ function renderSchedules() {
           left.appendChild(memberDotsContainer);
         }
 
+        // Long-press and context menu logic
+        let pressTimer = null;
+        const startPress = (e) => {
+          pressTimer = setTimeout(() => {
+            e.preventDefault();
+            openScheduleDetailModal(s.id);
+          }, 500); // 500ms for long press
+        };
+        const cancelPress = () => {
+          clearTimeout(pressTimer);
+        };
+        
+        item.addEventListener("mousedown", startPress);
+        item.addEventListener("touchstart", startPress);
+        item.addEventListener("mouseup", cancelPress);
+        item.addEventListener("mouseleave", cancelPress);
+        item.addEventListener("touchend", cancelPress);
+        item.addEventListener("touchcancel", cancelPress);
+        
         item.addEventListener("contextmenu", (e) => {
           e.preventDefault();
-          if (!confirm(`刪除行程「${s.title}」？`)) return;
-          state.schedules = state.schedules.filter((x) => x.id !== s.id);
-          saveState();
-          renderSchedules();
+          openScheduleDetailModal(s.id);
         });
 
         item.appendChild(left);

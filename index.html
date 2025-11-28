@@ -63,7 +63,6 @@
         <section class="panel panel-expenses" id="expenses-panel">
           <!-- 新增記帳 -->
           <div class="card">
-            <h3 class="card-title">新增記帳</h3>
             <form id="expense-form" class="form-grid">
               <div class="form-field">
                 <input id="expense-title" type="text" required placeholder="項目名稱" />
@@ -109,7 +108,7 @@
 
       <!-- 右側：已加入行程列表 -->
       <section class="panel panel-schedule" id="schedule-panel">
-        <h2 class="panel-title">行程列表（已加入）</h2>
+        <h2 class="panel-title">行程列表 (拖曳可排序、長按或右鍵可編輯)</h2>
 
         <div class="card">
           <div id="schedule-list" class="schedule-list empty-hint"></div>
@@ -128,6 +127,7 @@
   <!-- Member Modal -->
   <div id="member-modal" class="modal-overlay hidden">
     <div class="modal-content">
+      <button class="close-btn">&times;</button>
       <h3 class="modal-title">新增成員</h3>
       <form id="modal-member-form">
         <div class="form-field">
@@ -153,8 +153,40 @@
   <!-- Member Detail Modal -->
   <div id="member-detail-modal" class="modal-overlay hidden">
     <div class="modal-content">
+      <button class="close-btn">&times;</button>
       <div id="member-detail-content">
         <!-- Content will be populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Detail Modal -->
+  <div id="schedule-detail-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <h3 class="modal-title">編輯行程</h3>
+      <div id="schedule-detail-content" class="form-grid">
+        <div class="form-field form-field-full">
+          <label for="schedule-detail-title">名稱</label>
+          <input id="schedule-detail-title" type="text" />
+        </div>
+        <div class="form-field form-field-full">
+          <label>參與成員</label>
+          <div id="schedule-detail-members" class="chip-group"></div>
+        </div>
+        <div class="form-field form-field-full">
+          <label for="schedule-detail-details">細節</label>
+          <textarea id="schedule-detail-details" rows="3"></textarea>
+        </div>
+        <div class="form-field form-field-full">
+          <label for="schedule-detail-map-link">Google Map 連結</label>
+          <input id="schedule-detail-map-link" type="url" />
+          <div id="schedule-map-link-preview"></div>
+        </div>
+        <div class="form-actions form-field-full" style="justify-content: space-between;">
+          <button type="button" id="schedule-detail-delete-btn" class="btn danger">刪除</button>
+          <button type="button" id="schedule-detail-save-btn" class="btn primary">儲存</button>
+        </div>
       </div>
     </div>
   </div>

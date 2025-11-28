@@ -538,3 +538,58 @@
     }
   }
   
+/* Currency Selector */
+.currency-selector {
+  display: flex;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  background: #f9fafb;
+}
+
+.currency-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.currency-option.active {
+  background: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.currency-option span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.currency-option.active span {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.currency-option input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 2px;
+  font-size: 12px;
+  text-align: right;
+}
+
+.currency-option input:disabled {
+  color: var(--text-subtle);
+}
+
+.currency-option input:focus {
+  outline: none;
+}
+  

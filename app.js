@@ -92,17 +92,13 @@ function cacheDom() {
   dom.expenseForm = document.getElementById("expense-form");
   dom.expenseDate = document.getElementById("expense-date");
   dom.expenseAmount = document.getElementById("expense-amount");
-  dom.expenseCurrency = document.getElementById("expense-currency");
-  dom.expenseRate = document.getElementById("expense-rate");
   dom.expenseTitle = document.getElementById("expense-title");
   dom.expensePayer = document.getElementById("expense-payer");
   dom.expenseMembers = document.getElementById("expense-members");
+  dom.currencySelector = document.getElementById("currency-selector");
   dom.scheduleForm = document.getElementById("schedule-form");
   dom.scheduleDate = document.getElementById("schedule-date");
-  dom.scheduleTime = document.getElementById("schedule-time");
   dom.scheduleTitle = document.getElementById("schedule-title");
-  dom.scheduleLocation = document.getElementById("schedule-location");
-  dom.scheduleMembers = document.getElementById("schedule-members");
   dom.scheduleList = document.getElementById("schedule-list");
   dom.leftColumn = document.getElementById("left-column");
   // dom.splitter = document.getElementById("splitter"); // Removed
@@ -119,9 +115,7 @@ function initForms() {
     if (newName) {
       state.tripName = newName;
       saveState();
-      // Maybe show a small "saved" confirmation? For now, just save.
     } else {
-      // Restore previous name if input is empty
       dom.tripTitle.value = state.tripName;
     }
   });
@@ -130,39 +124,28 @@ function initForms() {
   dom.modalMemberForm.addEventListener("submit", handleAddMember);
   dom.modalCancelBtn.addEventListener("click", closeMemberModal);
 
-  // --- Old member form logic removed ---
+  // Currency Selector
+  initCurrencySelector();
 
-  // 匯率初始
-  dom.rateJPY.value = state.settings.rateJPY;
-  dom.rateKRW.value = state.settings.rateKRW;
-
-  dom.saveRates.addEventListener("click", () => {
-    const rj = parseFloat(dom.rateJPY.value);
-    const rk = parseFloat(dom.rateKRW.value);
-    if (!(rj > 0 && rk > 0)) {
-      alert("請輸入有效匯率");
-      return;
-    }
-    state.settings.rateJPY = rj;
-    state.settings.rateKRW = rk;
-    saveState();
-    updateExpenseRate();
-    alert("匯率已更新");
-  });
-
-  dom.expenseCurrency.addEventListener("change", updateExpenseRate);
-  updateExpenseRate();
-
-  // 記帳
+  // Expense Form
   dom.expenseForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const amount = parseFloat(dom.expenseAmount.value);
-    const rate = parseFloat(dom.expenseRate.value);
-    if (!(amount > 0 && rate > 0)) {
-      alert("金額或匯率錯誤");
+    if (!(amount > 0)) {
+      alert("金額錯誤");
       return;
     }
-    const currency = dom.expenseCurrency.value;
+
+    const activeOption = dom.currencySelector.querySelector('.currency-option.active');
+    const currency = activeOption.dataset.currency;
+    const rateInput = activeOption.querySelector('input');
+    const rate = parseFloat(rateInput.value);
+
+    if (!(rate > 0)) {
+      alert("匯率錯誤");
+      return;
+    }
+
     const date = dom.expenseDate.value;
     const title = dom.expenseTitle.value.trim();
     if (!title) return;
@@ -187,28 +170,23 @@ function initForms() {
     });
     saveState();
     dom.expenseForm.reset();
-    updateExpenseRate();
+    renderCurrencySelector(); // Reset to default view
   });
 
-  // 行程
+  // Schedule Form
   dom.scheduleForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const date = dom.scheduleDate.value;
     const title = dom.scheduleTitle.value.trim();
     if (!date || !title) return;
-    const time = dom.scheduleTime.value || "";
-    const location = dom.scheduleLocation.value.trim();
-    const memberIds = Array.from(
-      dom.scheduleMembers.querySelectorAll("input[type=checkbox]:checked")
-    ).map((i) => i.value);
 
     state.schedules.push({
       id: genId("s"),
       date,
-      time,
+      time: "",
       title,
-      location,
-      memberIds
+      location: "",
+      memberIds: []
     });
     saveState();
     dom.scheduleForm.reset();
@@ -216,11 +194,47 @@ function initForms() {
   });
 }
 
-function updateExpenseRate() {
-  const c = dom.expenseCurrency.value;
-  if (c === "JPY") dom.expenseRate.value = state.settings.rateJPY;
-  else if (c === "KRW") dom.expenseRate.value = state.settings.rateKRW;
-  else dom.expenseRate.value = 1;
+function renderCurrencySelector() {
+  const currencies = [
+    { key: "TWD", rate: 1.0, disabled: true },
+    { key: "JPY", rate: state.settings.rateJPY },
+    { key: "KRW", rate: state.settings.rateKRW },
+  ];
+
+  dom.currencySelector.innerHTML = currencies.map((c, index) => `
+    <div class="currency-option ${index === 0 ? 'active' : ''}" data-currency="${c.key}">
+      <span>${c.key}</span>
+      <input type="number" value="${c.rate}" ${c.disabled ? 'disabled' : ''} min="0" step="0.0001">
+    </div>
+  `).join('');
+}
+
+function initCurrencySelector() {
+  renderCurrencySelector();
+
+  dom.currencySelector.addEventListener('click', (e) => {
+    const targetOption = e.target.closest('.currency-option');
+    if (targetOption) {
+      dom.currencySelector.querySelectorAll('.currency-option').forEach(opt => {
+        opt.classList.remove('active');
+      });
+      targetOption.classList.add('active');
+    }
+  });
+
+  dom.currencySelector.addEventListener('change', (e) => {
+    if (e.target.tagName === 'INPUT') {
+      const currency = e.target.parentElement.dataset.currency;
+      const newRate = parseFloat(e.target.value);
+      if (currency === 'JPY' && newRate > 0) {
+        state.settings.rateJPY = newRate;
+        saveState();
+      } else if (currency === 'KRW' && newRate > 0) {
+        state.settings.rateKRW = newRate;
+        saveState();
+      }
+    }
+  });
 }
 
 /* Render all */
@@ -312,8 +326,6 @@ function openMemberDetailModal(memberId) {
 
   dom.memberDetailModal.dataset.memberId = memberId;
 
-  const settlementHTML = '';
-
   dom.memberDetailContent.innerHTML = `
     <h3>
       <div class="member-dot" style="background-color:${member.colorHex};">${member.short}</div>
@@ -333,10 +345,11 @@ function openMemberDetailModal(memberId) {
   document.getElementById("add-demerit-btn").onclick = () => {
     member.demerits += 1;
     saveState();
-    openMemberDetailModal(memberId); // Re-render
+    // Just update the count, don't re-render the whole modal
+    dom.memberDetailContent.querySelector(".demerit-count").textContent = member.demerits;
   };
 
-  document.getElementById("delete-member-btn").onclick = () => deleteMember(memberId);
+  document.getElementById("delete-member-btn").addEventListener("click", () => deleteMember(memberId));
   
   dom.memberDetailModal.onclick = (e) => {
     if (e.target === dom.memberDetailModal) {

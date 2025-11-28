@@ -46,24 +46,10 @@
           <div class="card">
             <form id="schedule-form" class="form-grid">
               <div class="form-field">
-                <label for="schedule-date">日期</label>
                 <input id="schedule-date" type="date" required />
               </div>
               <div class="form-field">
-                <label for="schedule-time">時間</label>
-                <input id="schedule-time" type="time" />
-              </div>
-              <div class="form-field">
-                <label for="schedule-title">名稱</label>
-                <input id="schedule-title" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="schedule-location">地點 / 備註</label>
-                <input id="schedule-location" type="text" />
-              </div>
-              <div class="form-field form-field-full">
-                <label>參與成員</label>
-                <div id="schedule-members" class="chip-group"></div>
+                <input id="schedule-title" type="text" required placeholder="名稱/地點" />
               </div>
               <div class="form-actions form-field-full">
                 <button type="submit" class="btn primary">加入行程</button>
@@ -75,24 +61,6 @@
         <!-- 左下：記帳 + 結算 -->
         <section class="panel panel-expenses" id="expenses-panel">
           <h2 class="panel-title">記帳與結算</h2>
-
-          <!-- 匯率設定 -->
-          <div class="card">
-            <h3 class="card-title">匯率設定（主幣：TWD）</h3>
-            <div class="form-grid small">
-              <div class="form-field">
-                <label for="rate-jpy">1 JPY = ? TWD</label>
-                <input id="rate-jpy" type="number" min="0" step="0.0001" />
-              </div>
-              <div class="form-field">
-                <label for="rate-krw">1 KRW = ? TWD</label>
-                <input id="rate-krw" type="number" min="0" step="0.0001" />
-              </div>
-              <div class="form-actions form-field-full">
-                <button id="save-rates" type="button" class="btn secondary">更新匯率</button>
-              </div>
-            </div>
-          </div>
 
           <!-- 新增記帳 -->
           <div class="card">
@@ -106,17 +74,11 @@
                 <label for="expense-amount">金額</label>
                 <input id="expense-amount" type="number" min="0" step="0.01" required />
               </div>
-              <div class="form-field">
-                <label for="expense-currency">幣別</label>
-                <select id="expense-currency">
-                  <option value="TWD">TWD</option>
-                  <option value="JPY">JPY</option>
-                  <option value="KRW">KRW</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="expense-rate">匯率（可覆寫）</label>
-                <input id="expense-rate" type="number" min="0" step="0.0001" required />
+              <div class="form-field form-field-full">
+                <label>幣別與匯率</label>
+                <div id="currency-selector" class="currency-selector">
+                  <!-- JS will populate this -->
+                </div>
               </div>
               <div class="form-field">
                 <label for="expense-title">項目名稱</label>

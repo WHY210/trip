@@ -115,6 +115,19 @@ function cacheDom() {
   dom.scheduleMapLinkPreview = document.getElementById("schedule-map-link-preview");
   dom.scheduleDetailDeleteBtn = document.getElementById("schedule-detail-delete-btn");
   dom.scheduleDetailSaveBtn = document.getElementById("schedule-detail-save-btn");
+
+  // New Schedule Modal elements
+  dom.addNewScheduleBtn = document.getElementById("add-new-schedule-btn");
+  dom.newScheduleModal = document.getElementById("new-schedule-modal");
+  dom.newScheduleForm = document.getElementById("new-schedule-form");
+  dom.newScheduleDate = document.getElementById("new-schedule-date");
+  dom.newScheduleTitle = document.getElementById("new-schedule-title");
+  dom.newScheduleTime = document.getElementById("new-schedule-time");
+  dom.newScheduleLocation = document.getElementById("new-schedule-location");
+  dom.newScheduleDetails = document.getElementById("new-schedule-details");
+  dom.newScheduleMapLink = document.getElementById("new-schedule-map-link");
+  dom.newScheduleMembers = document.getElementById("new-schedule-members");
+  dom.newScheduleCancelBtn = document.getElementById("new-schedule-cancel-btn");
 }
 
 /* Init forms */
@@ -221,6 +234,17 @@ function initForms() {
     dom.scheduleForm.reset();
     renderSchedules();
   });
+
+  // New Schedule Modal Logic
+  dom.addNewScheduleBtn.addEventListener("click", openNewScheduleModal);
+  dom.newScheduleCancelBtn.addEventListener("click", closeNewScheduleModal);
+  dom.newScheduleModal.addEventListener("click", (e) => {
+    if (e.target === dom.newScheduleModal) {
+      closeNewScheduleModal();
+    }
+  });
+
+  dom.newScheduleForm.addEventListener("submit", handleAddNewSchedule);
 }
 
 function renderCurrencySelector() {
@@ -274,6 +298,97 @@ function renderAll() {
   renderSharedMemberChips();
   renderMemberChipsForSchedule();
   renderSchedules();
+  renderMemberChipsForNewScheduleModal(); // Ensure new schedule modal's member chips are rendered
+}
+
+function openNewScheduleModal() {
+  const today = new Date().toISOString().split('T')[0];
+  dom.newScheduleDate.value = today;
+  dom.newScheduleForm.reset(); // Reset form fields
+  renderMemberChipsForNewScheduleModal(); // Render member chips (all unchecked)
+  dom.newScheduleModal.classList.remove("hidden");
+  dom.newScheduleModal.querySelector('.close-btn').onclick = closeNewScheduleModal;
+}
+
+function closeNewScheduleModal() {
+  dom.newScheduleModal.classList.add("hidden");
+  dom.newScheduleForm.reset(); // Clear form on close
+}
+
+function renderMemberChipsForNewScheduleModal() {
+  dom.newScheduleMembers.innerHTML = "";
+
+  state.members.forEach((m) => {
+    const label = document.createElement("label");
+    label.className = "chip";
+    label.title = m.name;
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = m.id;
+    // By default, members are not selected in the new schedule modal
+    input.checked = false;
+
+    const dot = document.createElement("div");
+    dot.className = "member-dot small";
+    dot.style.backgroundColor = m.colorHex;
+    dot.textContent = m.short;
+
+    label.appendChild(input);
+    label.appendChild(dot);
+    dom.newScheduleMembers.appendChild(label);
+  });
+
+  // Handle click events for member chips to toggle 'active' class and check hidden checkbox
+  const memberChips = dom.newScheduleMembers.querySelectorAll('.chip');
+  memberChips.forEach(chip => {
+    const input = chip.querySelector('input');
+    // Set active class initially based on checked state
+    if (input.checked) {
+      chip.classList.add('active');
+    }
+
+    chip.addEventListener('click', (e) => {
+      if (e.target === input) {
+        return;
+      }
+      input.checked = !input.checked; // Toggle the hidden checkbox
+      chip.classList.toggle('active', input.checked); // Toggle active class visually
+    });
+  });
+}
+
+function handleAddNewSchedule(e) {
+  e.preventDefault();
+
+  const date = dom.newScheduleDate.value;
+  const title = dom.newScheduleTitle.value.trim();
+  const time = dom.newScheduleTime.value.trim();
+  const location = dom.newScheduleLocation.value.trim();
+  const details = dom.newScheduleDetails.value.trim();
+  const mapLink = dom.newScheduleMapLink.value.trim();
+  const memberIds = Array.from(
+    dom.newScheduleMembers.querySelectorAll("input[type=checkbox]:checked")
+  ).map((i) => i.value);
+
+  if (!date || !title) {
+    alert("日期和名稱/地點為必填項");
+    return;
+  }
+
+  state.schedules.push({
+    id: genId("s"),
+    date,
+    time,
+    title,
+    location,
+    details,
+    mapLink,
+    memberIds
+  });
+  saveState();
+  closeNewScheduleModal();
+  renderSchedules(); // Re-render the schedule list
 }
 
 /* Member Modal */

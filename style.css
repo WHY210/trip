@@ -702,3 +702,26 @@
   opacity: 0.5;
 
 }
+
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: #fff;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  border: none;
+  z-index: 900; /* Ensure it's above other content but below modals */
+}
+
+.fab:hover {
+  background-color: #3f39c9; /* A slightly darker shade of primary */
+}

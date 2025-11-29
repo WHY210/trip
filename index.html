@@ -115,6 +115,7 @@
         <div class="card">
           <div id="schedule-list" class="schedule-list empty-hint"></div>
         </div>
+        <button class="fab" id="add-new-schedule-btn" title="新增行程">+</button>
       </section>
     </main>
   </div>
@@ -190,6 +191,118 @@
           <button type="button" id="schedule-detail-save-btn" class="btn primary">儲存</button>
         </div>
       </div>
+    </div>
+  </div>
+  <!-- Member Modal -->
+  <div id="member-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <h3 class="modal-title">新增成員</h3>
+      <form id="modal-member-form">
+        <div class="form-field">
+          <label for="modal-member-name">姓名</label>
+          <input id="modal-member-name" type="text" required />
+        </div>
+        <div class="form-field">
+          <label for="modal-member-short">綽號 (1-2字)</label>
+          <input id="modal-member-short" type="text" maxlength="2" />
+        </div>
+        <div class="form-field">
+          <label for="modal-member-note">備註</label>
+          <input id="modal-member-note" type="text" />
+        </div>
+        <div class="form-actions">
+          <button type="button" id="modal-cancel-btn" class="btn secondary">取消</button>
+          <button type="submit" class="btn primary">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Member Detail Modal -->
+  <div id="member-detail-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <div id="member-detail-content">
+        <!-- Content will be populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Detail Modal -->
+  <div id="schedule-detail-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <h3 class="modal-title">編輯行程</h3>
+      <div id="schedule-detail-content" class="form-grid">
+        <div class="form-field form-field-full">
+          <label for="schedule-detail-title">名稱</label>
+          <input id="schedule-detail-title" type="text" />
+        </div>
+        <div class="form-field form-field-full">
+          <label>參與成員</label>
+          <div id="schedule-detail-members" class="chip-group"></div>
+        </div>
+        <div class="form-field form-field-full">
+          <label for="schedule-detail-details">細節</label>
+          <textarea id="schedule-detail-details" rows="3"></textarea>
+        </div>
+        <div class="form-field form-field-full">
+          <label for="schedule-detail-map-link">Google Map 連結</label>
+          <input id="schedule-detail-map-link" type="url" />
+          <div id="schedule-map-link-preview"></div>
+        </div>
+        <div class="form-actions form-field-full" style="justify-content: space-between;">
+          <button type="button" id="schedule-detail-delete-btn" class="btn danger">刪除</button>
+          <button type="button" id="schedule-detail-save-btn" class="btn primary">儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Schedule Modal -->
+  <div class="modal-overlay hidden" id="new-schedule-modal">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <h3 class="modal-title">新增行程</h3>
+      <form id="new-schedule-form">
+        <div class="form-grid">
+          <div class="form-field-full">
+            <label for="new-schedule-date">日期</label>
+            <input type="date" id="new-schedule-date" required />
+          </div>
+          <div class="form-field-full">
+            <label for="new-schedule-title">名稱/地點</label>
+            <input type="text" id="new-schedule-title" placeholder="行程名稱或地點" required />
+          </div>
+          <div class="form-field">
+            <label for="new-schedule-time">時間 (選填)</label>
+            <input type="time" id="new-schedule-time" />
+          </div>
+          <div class="form-field">
+            <label for="new-schedule-location">詳細地點 (選填)</label>
+            <input type="text" id="new-schedule-location" placeholder="例如：台北101" />
+          </div>
+          <div class="form-field-full">
+            <label for="new-schedule-details">細節 (選填)</label>
+            <textarea id="new-schedule-details" rows="3" placeholder="行程說明"></textarea>
+          </div>
+          <div class="form-field-full">
+            <label for="new-schedule-map-link">Google Maps 連結 (選填)</label>
+            <input type="url" id="new-schedule-map-link" placeholder="貼上Google Maps連結" />
+          </div>
+          <div class="form-field-full">
+            <label>參與成員</label>
+            <div class="chip-group" id="new-schedule-members">
+              <!-- Member chips will be rendered here -->
+            </div>
+          </div>
+        </div>
+        <div class="form-actions" style="margin-top: 20px;">
+          <button type="button" class="btn secondary" id="new-schedule-cancel-btn">取消</button>
+          <button type="submit" class="btn primary">儲存</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
